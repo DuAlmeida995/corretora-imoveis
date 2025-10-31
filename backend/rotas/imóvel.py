@@ -19,8 +19,8 @@ def filtra_imóveis():
     possui_garagem = request.args.get("possui_garagem", type=lambda v: v.lower() == 'true' if v else None)
     mobiliado = request.args.get("mobiliado", type=lambda v: v.lower() == 'true' if v else None)
     cpf_prop= request.args.get("cpf", "")
-    matrícula= request.args.get("matrícula", ""),
-    comodidade= request.args.get("comodidade","")
+    matrícula= request.args.get("matrícula", "")
+    comodidade= request.args.get("comodidade", "")
 
     return jsonify(ImóvelDatabase().filtra_imoveis(
         valor_venal,

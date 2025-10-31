@@ -107,10 +107,24 @@ class ImóvelDatabase:
             else:
                 query += f"WHERE i.matrícula = '{matrícula}'\n"
 
-        #if comodidade:
-            #comodidade_list = comodidade.split(",")
-            #for item in comodidade_list:
-                #comodidade_item = item.strip()
+        if comodidade:
+            comodidade_list = comodidade.split(",")
+            subqueries = []
+            for item in comodidade_list:
+                comodidade_item = item.strip()
+                subquery = f"""
+                SELECT i.matrícula
+                FROM imóvel i
+                LEFT JOIN comodidades_imóvel c ON i.matrícula = c.matrícula
+                WHERE c.comodidade = '{comodidade_item}'
+                """
+                subqueries.append(subquery)
 
+            intersect_query = f" INTERSECT ".join(subqueries)
+
+            if "WHERE" in query:
+                query = f"{query} AND i.matrícula IN ({intersect_query})"
+            else:
+                query += f"WHERE i.matrícula IN ({intersect_query})\n"
 
         return self.db.execute_select_all(query)

@@ -128,3 +128,22 @@ class ImóvelDatabase:
                 query += f"WHERE i.matrícula IN ({intersect_query})\n"
 
         return self.db.execute_select_all(query)
+    
+    def get_status_imovel(self, matrícula: str):
+        statement = f"""
+            SELECT c.status FROM imóvel i LEFT JOIN contrato c ON i.matrícula = c.matrícula_imóvel WHERE i.matrícula='{matrícula}' ORDER BY c.código DESC; \n
+        """
+        
+        resultado_lista = self.db.execute_select_all(statement)
+        if not resultado_lista:
+            return "Matrícula Inválida"
+        
+        primeira_linha_dict = resultado_lista[0]
+        status_do_banco = primeira_linha_dict['status']
+
+        if status_do_banco is None or status_do_banco== 'Finalizado' or status_do_banco == 'Cancelado':
+            return "Disponível"
+        elif status_do_banco == 'Ativo':
+            return "Alugado"
+        else:
+            return status_do_banco

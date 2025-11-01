@@ -40,3 +40,10 @@ def filtra_imóveis():
         matrícula,
         comodidade
     )), 200
+
+@imovel_blueprint.route("/imóveis/status", methods=["GET"])
+def verifica_status_imóveis():
+    matrícula = request.args.get("matrícula", "")
+    return jsonify(ImóvelDatabase().get_status_imovel(
+        matrícula
+    )), 200

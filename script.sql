@@ -303,6 +303,11 @@ matrícula_imóvel, CPF_prop, CPF_corretor) VALUES
 (6, 2200.00, 'Finalizado', '2023-01-10', '2025-07-09', 'Aluguel', 
 '1001001001001007', '40960010244', '11122233344');
 
+INSERT INTO contrato(código, valor, status,	data_início, data_fim, tipo, 
+matrícula_imóvel, CPF_prop, CPF_corretor) VALUES
+(7, 2400.00, 'Ativo', '2025-07-20', '2025-11-29', 'Aluguel', 
+'1001001001001007', '40960010244', '11122233344');
+
 INSERT INTO pagamento(código_c,	n_pagamento, data_vencimento, data_pagamento, 
 valor, status, forma_pagamento, tipo) VALUES
 (2, 1, '2025-08-15', '2025-08-14', 2500.00, 'Pago', 'PIX', 'Aluguel'),
@@ -325,3 +330,5 @@ INSERT INTO assina(CPF_adq, código_c) VALUES
 ('01120230400', 4),
 ('52170230456', 5),
 ('20540670822', 6);
+
+

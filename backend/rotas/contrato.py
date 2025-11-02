@@ -94,3 +94,15 @@ def alterar_status_contrato():
         return jsonify("Não foi possível alterar o status do contrato."), 400
 
     return jsonify("Status do contrato alterado corretamente."), 200
+
+@contrato_blueprint.route("/contratos/obter-aluguel",  methods=["GET"])
+def get_periodo_alugueis_imovel():
+    matrícula = request.args.get("matrícula", "")
+
+    registro=ContratoDatabase().get_período_aluguéis_imóvel(
+        matrícula
+    )
+
+    return jsonify(registro),200
+
+

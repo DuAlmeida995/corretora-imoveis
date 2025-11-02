@@ -51,3 +51,13 @@ class ContratoDatabase:
             WHERE código = {código}; \n
         """
         return self.db.execute_statement(statement)
+    
+    def get_período_aluguéis_imóvel(self, matrícula_imóvel:str):
+        statement=f"""
+        SELECT código, matrícula_imóvel,data_início,data_fim FROM contrato
+        WHERE tipo='Aluguel' AND matrícula_imóvel='{matrícula_imóvel}'
+        ORDER BY data_início DESC;
+        """
+
+        return self.db.execute_select_all(statement)
+    

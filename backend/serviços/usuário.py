@@ -6,10 +6,34 @@ class UsuárioDatabase:
     def __init__(self, db_provider=DatabaseManager()) -> None:
         self.db = db_provider
 
-    def insere_usuário(self, cpf: str, prenome: str, sobrenome: str, data_nasc:date): #cadastra um usuário (sem ainda colocar de qual/quais tipos ele é)
+    def insere_usuário(self, cpf: str, prenome: str, sobrenome: str, data_nasc:date, email:str): #cadastra um usuário (sem ainda colocar de qual/quais tipos ele é)
         statement = f"""
-            INSERT INTO usuário (CPF, prenome, sobrenome, data_nasc)
-            VALUES ('{cpf}', '{prenome}', '{sobrenome}', '{data_nasc}'); \n
+            INSERT INTO usuário (CPF, prenome, sobrenome, data_nasc, email)
+            VALUES ('{cpf}', '{prenome}', '{sobrenome}', '{data_nasc}', '{email}'); \n
+        """
+        
+        return self.db.execute_statement(statement)
+
+    def insere_adquirente(self, cpf: str, pontuacao_credito: int): #cadastra um usuário como adquirente
+        statement = f"""
+            INSERT INTO adquirente (CPF,pontuacao_credito)
+            VALUES ('{cpf}',{pontuacao_credito}); \n
+        """
+        
+        return self.db.execute_statement(statement)
+    
+    def insere_proprietário(self, cpf: str): #cadastra um usuário como proprietário
+        statement = f"""
+            INSERT INTO proprietário (CPF)
+            VALUES ('{cpf}'); \n
+        """
+        
+        return self.db.execute_statement(statement)
+    
+    def insere_corretor(self, cpf: str, especialidade:str, creci:str, regiao_atuação:str): #cadastra um usuário como corretor
+        statement = f"""
+            INSERT INTO corretor (CPF, especialidade, creci_codigo, regiao_atuação)
+            VALUES ('{cpf}', '{especialidade}', '{creci}', '{regiao_atuação}'); \n
         """
         
         return self.db.execute_statement(statement)

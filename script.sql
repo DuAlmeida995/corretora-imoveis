@@ -5,8 +5,20 @@ CREATE TABLE usuário
 	prenome varchar(15) NOT NULL,
 	sobrenome varchar(20) NOT NULL,
 	data_nasc date NOT NULL CHECK (EXTRACT(YEAR FROM AGE(CURRENT_DATE, data_nasc)) >= 18),
+	email varchar(50) NOT NULL,
 	CONSTRAINT UPK
 		PRIMARY KEY(CPF)
+);
+
+CREATE TABLE login
+(
+	CPF char(11) NOT NULL,
+	senha varchar(15) NOT NULL,
+	CONSTRAINT LPK
+		PRIMARY KEY(CPF,senha),
+	CONSTRAINT LFK
+		FOREIGN KEY (CPF) REFERENCES usuário(CPF)
+		ON DELETE cascade ON UPDATE cascade
 );
 
 CREATE TABLE proprietário
@@ -80,6 +92,8 @@ CREATE TABLE imóvel
 		ON DELETE cascade ON UPDATE cascade
 );
 
+ALTER TABLE imóvel ADD COLUMN descrição varchar(250);
+
 CREATE TABLE comodidades_imóvel
 (
 	matrícula char(16) NOT NULL,
@@ -147,26 +161,26 @@ CREATE TABLE assina
 );
 
 -- Preenchendo tabelas
-INSERT INTO usuário(CPF, prenome, sobrenome, data_nasc) VALUES
-('12345678901', 'Ana', 'Silva', '1990-05-15'),
-('98765432109', 'Bruno', 'Costa', '1985-11-01'),
-('31750890034', 'Samuel', 'Cavalcanti', '1991-04-16'),
-('55566677788', 'Daniel', 'Fernandes', '1977-07-22'),
-('10230450611', 'Fátima', 'Souza', '1965-04-12'),
-('20540670822', 'Gabriel', 'Lima', '1998-02-25'),
-('30750890033', 'Helena', 'Ribeiro', '1982-09-08'),
-('80700890088', 'Marcelo', 'Gomes', '1979-10-27'),
-('40960010244', 'Isabel', 'Almeida', '2000-12-01'),
-('50170230455', 'Júlia', 'Monteiro', '1993-07-18'),
-('60380450666', 'Lucas', 'Nogueira', '1988-11-14'),
-('70590670877', 'Manuela', 'Barros', '2002-06-03'),
-('52170230456', 'Tiago', 'Ferreira', '1975-12-11'),
-('90910010299', 'Paula', 'Mendes', '1995-08-19'),
-('01120230400', 'Pedro', 'Henrique', '2005-01-05'),
-('11330450612', 'Diego', 'Moreira', '1960-03-30'),
-('21540670823', 'Raquel', 'Freitas', '1987-05-21'),
-('41960010245', 'Tatiana', 'Pinheiro', '2003-08-07'),
-('11122233344', 'Carla', 'Dias', '2001-01-30');
+INSERT INTO usuário(CPF, prenome, sobrenome, data_nasc,email) VALUES
+('12345678901', 'Ana', 'Silva', '1990-05-15', 'ana_s@mail.com'),
+('98765432109', 'Bruno', 'Costa', '1985-11-01', 'bruno_c@mail.com'),
+('31750890034', 'Samuel', 'Cavalcanti', '1991-04-16','samuel_c@mail.com'),
+('55566677788', 'Daniel', 'Fernandes', '1977-07-22', 'daniel_f@mail.com'),
+('10230450611', 'Fátima', 'Souza', '1965-04-12', 'fatima_s@mail.com'),
+('20540670822', 'Gabriel', 'Lima', '1998-02-25', 'gabriel_l@mail.com'),
+('30750890033', 'Helena', 'Ribeiro', '1982-09-08', 'helena_r@mail.com'),
+('80700890088', 'Marcelo', 'Gomes', '1979-10-27', 'marcelo_g@mail.com'),
+('40960010244', 'Isabel', 'Almeida', '2000-12-01', 'isabel_a@mail.com'),
+('50170230455', 'Júlia', 'Monteiro', '1993-07-18', 'julia_m@mail.com'),
+('60380450666', 'Lucas', 'Nogueira', '1988-11-14', 'lucas_n@mail.com'),
+('70590670877', 'Manuela', 'Barros', '2002-06-03', 'manuela_b@mail.com'),
+('52170230456', 'Tiago', 'Ferreira', '1975-12-11', 'tiago_f@mail.com'),
+('90910010299', 'Paula', 'Mendes', '1995-08-19', 'paula_m@mail.com'),
+('01120230400', 'Pedro', 'Henrique', '2005-01-05', 'pedro_h@mail.com'),
+('11330450612', 'Diego', 'Moreira', '1960-03-30', 'diego_m@mail.com'),
+('21540670823', 'Raquel', 'Freitas', '1987-05-21', 'raquel_f@mail.com'),
+('41960010245', 'Tatiana', 'Pinheiro', '2003-08-07', 'tatiana_p@mail.com'),
+('11122233344', 'Carla', 'Dias', '2001-01-30', 'carla_d@mail.com');
 
 INSERT INTO proprietário(CPF) VALUES
 ('12345678901'),
@@ -226,27 +240,27 @@ INSERT INTO tel_usuário(CPF,telefone) VALUES
 ('41960010245','11978889999');
 
 INSERT INTO imóvel(matrícula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, 
-n_reformas, finalidade, logradouro, complemento, número, cep, cidade, CPF_prop) VALUES
+n_reformas, finalidade, logradouro, complemento, número, cep, cidade, CPF_prop,descrição) VALUES
 ('1001001001001001', 2, 850000.00, 80.5, 'Apartamento',true, true, 1, 'Residencial', 
-'Rua Itapura', 'Apto 101', '500', '03310000', 'São Paulo', '12345678901'),
+'Rua Itapura', 'Apto 101', '500', '03310000', 'São Paulo', '12345678901','Apartamento de 2 quartos bem localizado no Tatuapé, próximo ao metrô.'),
 ('1001001001001002', 0, 450000.00, 42.0, 'Sala Comercial', false, true, 0, 'Comercial', 
-'Rua Voluntários da Pátria', 'Sala 802', '2140', '02011000', 'São Paulo', '55566677788'),
+'Rua Voluntários da Pátria', 'Sala 802', '2140', '02011000', 'São Paulo', '55566677788','Sala comercial de 42m² em Santana, com 1 vaga de garagem.'),
 ('1001001001001003', 3, 2200000.00, 150.0, 'Apartamento', false, true, 2, 'Residencial', 
-'Rua Orfanato', 'Apto 121', '700', '03131010', 'São Paulo', '10230450611'),
+'Rua Orfanato', 'Apto 121', '700', '03131010', 'São Paulo', '10230450611','Amplo apartamento na Vila Prudente com 3 quartos'),
 ('1001001001001004', 1, 380000.00, 35.5, 'Studio', true, false, 0, 'Residencial', 
-'Avenida Vital Brasil', 'Apto 2205', '1000', '05503001', 'São Paulo', '60380450666'),
+'Avenida Vital Brasil', 'Apto 2205', '1000', '05503001', 'São Paulo', '60380450666','Studio mobiliado no Butantã, ideal para estudantes, próximo à USP.'),
 ('1001001001001005', 2, 1100000.00, 75.0, 'Apartamento', true, true, 1, 'Residencial', 
-'Rua Tuiuti', 'Apto 55', '2000', '03307000', 'São Paulo', '90910010299'),
+'Rua Tuiuti', 'Apto 55', '2000', '03307000', 'São Paulo', '90910010299','Apartamento mobiliado na Rua Tuiuti (Tatuapé), com 2 quartos e lazer completo.'),
 ('1001001001001006', 4, 3500000.00, 300.0, 'Casa', false, true, 3, 'Residencial', 
-'Alameda Jaú', NULL, '1177', '01420002', 'São Paulo', '11330450612'),
+'Alameda Jaú', NULL, '1177', '01420002', 'São Paulo', '11330450612','Casa espaçosa nos Jardins, 4 quartos, 300m²'),
 ('1001001001001007', 2, 650000.00, 68.0, 'Apartamento', true, true, 1, 'Residencial', 
-'Rua Ibitirama', 'Apto 401', '1500', '03133000', 'São Paulo', '40960010244'),
+'Rua Ibitirama', 'Apto 401', '1500', '03133000', 'São Paulo', '40960010244','Apartamento 2 quartos (1 suíte) na Vila Prudente.'),
 ('1001001001001008', 4, 4200000.00, 350.0, 'Casa', false, true, 1, 'Residencial', 
-'Rua Haddock Lobo', NULL, '1400', '01414002', 'São Paulo', '52170230456'),
+'Rua Haddock Lobo', NULL, '1400', '01414002', 'São Paulo', '52170230456','Casa de alto padrão nos Jardins, próxima à Rua Oscar Freire.'),
 ('1001001001001009', 0, 1800000.00, 450.0, 'Galpão',false, false, 2, 'Comercial', 
-'Rua Bresser', NULL, '1200', '03017000', 'São Paulo', '55566677788'),
+'Rua Bresser', NULL, '1200', '03017000', 'São Paulo', '55566677788','Galpão comercial de 450m² no Brás, com pé direito alto.'),
 ('1001001001001010', 0, 600000.00, 45.0, 'Sala Comercial', false, true, 0, 'Comercial',
-'Rua Azevedo Macedo', 'Sala 1010', '80', '02013000', 'São Paulo', '31750890034');
+'Rua Azevedo Macedo', 'Sala 1010', '80', '02013000', 'São Paulo', '31750890034','Sala comercial reformada em Santana, 45m², pronta para uso.');
 
 INSERT INTO comodidades_imóvel(matrícula,comodidade) VALUES
 ('1001001001001001', 'Elevador'),
@@ -325,6 +339,4 @@ INSERT INTO assina(CPF_adq, código_c) VALUES
 ('01120230400', 4),
 ('52170230456', 5),
 ('20540670822', 6);
-
-
 

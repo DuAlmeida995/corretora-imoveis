@@ -13,7 +13,7 @@ CREATE TABLE usuario
 CREATE TABLE login
 (
 	CPF char(11) NOT NULL,
-	senha varchar(15) NOT NULL,
+	senha varchar(64) NOT NULL,
 	CONSTRAINT LPK
 		PRIMARY KEY(CPF,senha),
 	CONSTRAINT LFK

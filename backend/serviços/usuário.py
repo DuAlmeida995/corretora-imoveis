@@ -47,6 +47,13 @@ class UsuárioDatabase:
             return
 
         tam_list= len(tel_list_limpa)
+
+        telefones_atuais_count = self.get_total_telefones_por_cpf(cpf)
+
+        if (telefones_atuais_count + tam_list) > 3:
+            return False
+        
+
         for indice, item in enumerate(tel_list_limpa):
             if indice < tam_list - 1:
                 statement += f"('{cpf}', '{item}'), \n"
@@ -55,10 +62,30 @@ class UsuárioDatabase:
 
         return self.db.execute_statement(statement)
     
+    def get_total_telefones_por_cpf(self, cpf: str) -> int: # obtém o total de telefones cadastrados para um usuário específico
+        statement = f"""
+            SELECT COUNT(*) AS total
+            FROM tel_usuário
+            WHERE CPF = '{cpf}';
+        """
+        resultado = self.db.execute_select_one(statement) 
+        
+        if resultado and 'total' in resultado:
+            return int(resultado['total'])
+        
+        # Se não encontrar nada, retorna 0
+        return 0
+
     def deleta_tel_usuário(self, cpf: str, tel_usuario: str): # remove os telefones de um usuário (aqui vc passa uma lista separada por vírgula)
         tel_list_limpa = [tel.strip() for tel in tel_usuario.split(',') if tel.strip()] #para limpar a lista e não quebrar a consulta
         if not tel_list_limpa:
             return
+        
+        telefones_atuais_count = self.get_total_telefones_por_cpf(cpf)
+        telefones_para_deletar_count = len(tel_list_limpa)
+
+        if (telefones_atuais_count - telefones_para_deletar_count) < 1:
+            return False
 
         tel_str = "', '".join(tel_list_limpa)
 

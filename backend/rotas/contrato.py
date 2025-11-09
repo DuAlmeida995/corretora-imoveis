@@ -11,26 +11,26 @@ def contratos_prazo():  #obtém contratos perto de vencer (em até 30 dias)
 @contrato_blueprint.route("/contratos/cadastro", methods=["POST"])
 def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina (liga o contrato ao adquirente)
     json = request.get_json()
-    código = json.get("código")
+    código = json.get("codigo")
     valor = json.get("valor")
     status = json.get("status")
-    data_início_str = json.get("data_início")
+    data_início_str = json.get("data_inicio")
     data_fim_str = json.get("data_fim")
     tipo = json.get("tipo")
-    matrícula_imóvel = json.get("matrícula_imóvel")
+    matrícula_imóvel = json.get("matricula_imovel")
     CPF_prop = json.get("CPF_prop")
     CPF_corretor = json.get("CPF_corretor")
 
     CPF_adq = json.get("CPF_adq")
 
     if not all([código, valor, status, data_início_str, data_fim_str, tipo, matrícula_imóvel, CPF_prop, CPF_corretor,CPF_adq]):
-        return jsonify("Todos os campos (código, valor, status, data_início, data_fim, tipo, matrícula_imóvel, CPF_prop, CPF_corretor) são obrigatórios"), 400
+        return jsonify("Todos os campos (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor) são obrigatórios"), 400
     
     try:
         data_início = datetime.strptime(data_início_str, '%Y-%m-%d').date()
         data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
     except (ValueError, TypeError):
-        return jsonify({"erro": "Formato de data inválido. Use YYYY-MM-DD"}), 400
+        return jsonify({"erro": "Formato de data invalido. Use YYYY-MM-DD"}), 400
 
     registro=ContratoDatabase().insere_contrato(
         código,
@@ -54,36 +54,36 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
             return jsonify("Contrato inserido corretamente."), 200
         else:
             ContratoDatabase().deleta_contrato(código) #para garantir que o contrato não vai ficar sem preencher a tabela assina
-            return jsonify("Não foi possível criar contrato."), 400
+            return jsonify("Nao foi possivel criar contrato."), 400
 
-    return jsonify("Não foi possível criar contrato."), 400
+    return jsonify("Nao foi possivel criar contrato."), 400
 
 
 @contrato_blueprint.route("/contratos/deleta", methods=["DELETE"])
 def deleta_contrato(): #deleta um contrato
     json = request.get_json()
-    código = json.get("código")
+    código = json.get("codigo")
 
     if not código:
-        return jsonify("O campo código é obrigatório"), 400
+        return jsonify("O campo codigo é obrigatorio"), 400
 
     registro=ContratoDatabase().deleta_contrato(
         código
     )
 
     if not registro:
-        return jsonify("Não foi possível deletar contrato."), 400
+        return jsonify("Nao foi possivel deletar contrato."), 400
 
     return jsonify("Contrato deletado corretamente."), 200
 
 @contrato_blueprint.route("/contratos/alterar-status", methods=["PUT"])
 def alterar_status_contrato(): #altera status de um contrato
     json = request.get_json()
-    código = json.get("código")
+    código = json.get("codigo")
     status = json.get("status")
 
     if not all([código, status]):
-        return jsonify("Todos os campos (código, status) são obrigatórios"), 400
+        return jsonify("Todos os campos (codigo, status) sao obrigatorios"), 400
 
     registro=ContratoDatabase().altera_status_contrato(
         código,
@@ -91,13 +91,13 @@ def alterar_status_contrato(): #altera status de um contrato
     )
 
     if not registro:
-        return jsonify("Não foi possível alterar o status do contrato."), 400
+        return jsonify("Nao foi possivel alterar o status do contrato."), 400
 
     return jsonify("Status do contrato alterado corretamente."), 200
 
-@contrato_blueprint.route("/contratos/obter-período-aluguel",  methods=["GET"])
+@contrato_blueprint.route("/contratos/obter-periodo-aluguel",  methods=["GET"])
 def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel de um imóvel
-    matrícula = request.args.get("matrícula", "")
+    matrícula = request.args.get("matricula", "")
 
     registro=ContratoDatabase().get_período_aluguéis_imóvel(
         matrícula
@@ -109,19 +109,19 @@ def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel
 def get_alugueis_ativos(): #obtém contratos de alguel ativos
     return jsonify(ContratoDatabase().get_alugueis_ativos()),200
 
-@contrato_blueprint.route("/contratos/obter-valores-imóvel",  methods=["GET"])
+@contrato_blueprint.route("/contratos/obter-valores-imovel",  methods=["GET"])
 def get_valores_contrato_imóvel(): #obtém histórico de valores dos contratos de um imóvel
     return jsonify(ContratoDatabase().get_valores_contratos_imóvel(
-        matrícula_imóvel = request.args.get("matrícula", "")
+        matrícula_imóvel = request.args.get("matricula", "")
     )),200
 
 @contrato_blueprint.route("/contratos/obter-mais-alugados",  methods=["GET"])
 def get_mais_alugados(): #obtém os imóveis mais alugados
     return jsonify(ContratoDatabase().get_mais_alugados()),200
 
-@contrato_blueprint.route("/contratos/obter-pessoas-imóvel",  methods=["GET"])
+@contrato_blueprint.route("/contratos/obter-pessoas-imovel",  methods=["GET"])
 def get_histórico_pessoas_imóvel(): #devolve o histórico de proprietários e adquirentes de um imóvel por contrato
-    matrícula = request.args.get("matrícula", "")
+    matrícula = request.args.get("matricula", "")
     return jsonify(ContratoDatabase().get_histórico_pessoas_imóvel(
         matrícula
     )),200

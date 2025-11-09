@@ -6,17 +6,29 @@ class ImóvelDatabase:
     def __init__(self, db_provider=DatabaseManager()) -> None:
         self.db = db_provider
 
-    def filtra_imoveis(self, valor_venal: float , logradouro:str, número:str, CEP: str, cidade: str, metragem_min: float, metragem_max:float, finalidade:str, tipo: str, n_quartos: int, n_reformas: int, possui_garagem: bool, mobiliado: bool, CPF_prop:str, matrícula:str, comodidade:str): #filtra imóveis de acordo com uma série de características (vc ecolhe quantas e quais)
+    def filtra_imoveis(self, valor_venal_min: float ,valor_venal_max: float, logradouro:str, número:str, CEP: str, cidade: str, metragem_min: float, metragem_max:float, finalidade:str, tipo: str, n_quartos: int, n_reformas: int, possui_garagem: bool, mobiliado: bool, CPF_prop:str, matrícula:str, comodidade:str): #filtra imóveis de acordo com uma série de características (vc ecolhe quantas e quais)
         query = """
                 SELECT DISTINCT i.* FROM imóvel i
                 LEFT JOIN comodidades_imóvel c ON i.matrícula = c.matrícula
                 """
-        if valor_venal:
-            if "WHERE" in query:
-                query += f"AND i.valor_venal <= {valor_venal}\n" #apresenta imóveis com valor venal menor ou igual ao especificado
+        if valor_venal_min:
+            if valor_venal_max:
+                if "WHERE" in query:
+                    query += f"AND i.valor_venal BETWEEN {valor_venal_min} AND {valor_venal_max}\n" #apresenta imóveis dentro da faixa de valor venal especificada
+                else:
+                    query += f"WHERE i.valor_venal BETWEEN {valor_venal_min} AND {valor_venal_max}\n"
+        
             else:
-                query += f"WHERE i.valor_venal <= {valor_venal}\n"
-
+                if "WHERE" in query:
+                    query += f"AND i.valor_venal >= {valor_venal_min}\n" #apresenta imóveis com valor venal mínimo especificado
+                else:
+                    query += f"WHERE i.valor_venal >= {valor_venal_min}\n"
+        else:
+            if valor_venal_max:
+                if "WHERE" in query:
+                    query += f"AND i.valor_venal <= {valor_venal_max}\n" #apresenta imóveis com valor venal máximo especificado
+                else:
+                    query += f"WHERE i.valor_venal <= {valor_venal_max}\n"
         if logradouro:
             if "WHERE" in query:
                 query += f"AND i.logradouro = '{logradouro}'\n"

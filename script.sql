@@ -1,5 +1,5 @@
 -- Criando as tabelas
-CREATE TABLE usuário
+CREATE TABLE usuario
 (
 	CPF char(11) NOT NULL,
 	prenome varchar(15) NOT NULL,
@@ -17,17 +17,17 @@ CREATE TABLE login
 	CONSTRAINT LPK
 		PRIMARY KEY(CPF,senha),
 	CONSTRAINT LFK
-		FOREIGN KEY (CPF) REFERENCES usuário(CPF)
+		FOREIGN KEY (CPF) REFERENCES usuario(CPF)
 		ON DELETE cascade ON UPDATE cascade
 );
 
-CREATE TABLE proprietário
+CREATE TABLE proprietario
 (
 	CPF char(11) NOT NULL,
 	CONSTRAINT PropPK
 		PRIMARY KEY(CPF),
 	CONSTRAINT PropFK
-		FOREIGN KEY (CPF) REFERENCES usuário(CPF)
+		FOREIGN KEY (CPF) REFERENCES usuario(CPF)
 		ON DELETE cascade ON UPDATE cascade
 );
 
@@ -38,7 +38,7 @@ CREATE TABLE adquirente
 	CONSTRAINT AdqPK
 		PRIMARY KEY(CPF),
 	CONSTRAINT AdqFK
-		FOREIGN KEY (CPF) REFERENCES usuário(CPF)
+		FOREIGN KEY (CPF) REFERENCES usuario(CPF)
 		ON DELETE cascade ON UPDATE cascade
 );
 
@@ -47,30 +47,30 @@ CREATE TABLE corretor
 	CPF char(11) NOT NULL,
 	especialidade varchar(15),
 	creci_codigo varchar(6) NOT NULL,
-	regiao_atuação varchar(30),
+	regiao_atuacao varchar(30),
 	CONSTRAINT CPK
 		PRIMARY KEY(CPF),
 	CONSTRAINT CFK
-		FOREIGN KEY (CPF) REFERENCES usuário(CPF)
+		FOREIGN KEY (CPF) REFERENCES usuario(CPF)
 		ON DELETE cascade ON UPDATE cascade,
 	CONSTRAINT unique_corr
 		UNIQUE(creci_codigo)
 );
 
-CREATE TABLE tel_usuário
+CREATE TABLE tel_usuario
 (
 	CPF char(11) NOT NULL,
 	telefone char(11) NOT NULL,
 	CONSTRAINT TelPK
 		PRIMARY KEY(CPF,telefone),
 	CONSTRAINT TelFK
-		FOREIGN KEY (CPF) REFERENCES usuário(CPF)
+		FOREIGN KEY (CPF) REFERENCES usuario(CPF)
 		ON DELETE cascade ON UPDATE cascade
 );
 
-CREATE TABLE imóvel
+CREATE TABLE imovel
 (
-	matrícula char(16) NOT NULL,
+	matricula char(16) NOT NULL,
 	n_quartos int,
 	valor_venal float,
 	metragem float,
@@ -81,48 +81,48 @@ CREATE TABLE imóvel
 	finalidade varchar(20),
 	logradouro varchar(50) NOT NULL,
 	complemento varchar(20),
-	número varchar(10) NOT NULL,
+	numero varchar(10) NOT NULL,
 	cep char(8) NOT NULL,
 	cidade varchar(50) NOT NULL,
 	CPF_prop char(11) NOT NULL,
 	CONSTRAINT IPK
-		PRIMARY KEY(matrícula),
+		PRIMARY KEY(matricula),
 	CONSTRAINT IFK
-		FOREIGN KEY (CPF_prop) REFERENCES proprietário(CPF)
+		FOREIGN KEY (CPF_prop) REFERENCES proprietario(CPF)
 		ON DELETE cascade ON UPDATE cascade
 );
 
-ALTER TABLE imóvel ADD COLUMN descrição varchar(250);
+ALTER TABLE imovel ADD COLUMN descricao varchar(250);
 
-CREATE TABLE comodidades_imóvel
+CREATE TABLE comodidades_imovel
 (
-	matrícula char(16) NOT NULL,
+	matricula char(16) NOT NULL,
 	comodidade varchar(30) NOT NULL,
 	CONSTRAINT CIPK
-		PRIMARY KEY(matrícula,comodidade),
+		PRIMARY KEY(matricula,comodidade),
 	CONSTRAINT CIFK
-		FOREIGN KEY (matrícula) REFERENCES imóvel(matrícula)
+		FOREIGN KEY (matricula) REFERENCES imovel(matricula)
 		ON DELETE cascade ON UPDATE cascade
 );
 
 CREATE TABLE contrato
 (
-	código int NOT NULL,
+	codigo int NOT NULL,
 	valor float NOT NULL,
 	status varchar(15),
-	data_início date,
+	data_inicio date,
 	data_fim date,
 	tipo varchar(20) NOT NULL,
-	matrícula_imóvel char(16) NOT NULL,
+	matricula_imovel char(16) NOT NULL,
 	CPF_prop char(11) NOT NULL,
 	CPF_corretor char(11) NOT NULL,
 	CONSTRAINT ContratoPK
-		PRIMARY KEY(código),
-	CONSTRAINT ContratoFK_matrícula
-		FOREIGN KEY (matrícula_imóvel) REFERENCES imóvel(matrícula)
+		PRIMARY KEY(codigo),
+	CONSTRAINT ContratoFK_matricula
+		FOREIGN KEY (matricula_imovel) REFERENCES imovel(matricula)
 		ON DELETE cascade ON UPDATE cascade,
 	CONSTRAINT ContratoFK_prop
-		FOREIGN KEY (CPF_prop) REFERENCES proprietário(CPF)
+		FOREIGN KEY (CPF_prop) REFERENCES proprietario(CPF)
 		ON DELETE cascade ON UPDATE cascade,
 	CONSTRAINT ContratoFK_corretor
 		FOREIGN KEY (CPF_corretor) REFERENCES corretor(CPF)
@@ -131,7 +131,7 @@ CREATE TABLE contrato
 
 CREATE TABLE pagamento
 (
-	código_c int NOT NULL,
+	codigo_c int NOT NULL,
 	n_pagamento int NOT NULL,
 	data_vencimento date NOT NULL,
 	data_pagamento date,
@@ -140,20 +140,20 @@ CREATE TABLE pagamento
 	forma_pagamento varchar(15) NOT NULL,
 	tipo varchar(15),
 	CONSTRAINT PagPK
-		PRIMARY KEY(código_c,n_pagamento),
+		PRIMARY KEY(codigo_c,n_pagamento),
 	CONSTRAINT PagFK
-		FOREIGN KEY (código_c) REFERENCES contrato(código)
+		FOREIGN KEY (codigo_c) REFERENCES contrato(codigo)
 		ON DELETE cascade ON UPDATE cascade
 );
 
 CREATE TABLE assina
 (
 	CPF_adq char(11) NOT NULL,
-	código_c int NOT NULL,
+	codigo_c int NOT NULL,
 	CONSTRAINT APK
-		PRIMARY KEY(código_c,CPF_adq),
+		PRIMARY KEY(codigo_c,CPF_adq),
 	CONSTRAINT AFK_contrato
-		FOREIGN KEY (código_c) REFERENCES contrato(código)
+		FOREIGN KEY (codigo_c) REFERENCES contrato(codigo)
 		ON DELETE cascade ON UPDATE cascade,
 	CONSTRAINT AFK_adq
 		FOREIGN KEY (CPF_adq) REFERENCES adquirente(CPF)
@@ -161,7 +161,7 @@ CREATE TABLE assina
 );
 
 -- Preenchendo tabelas
-INSERT INTO usuário(CPF, prenome, sobrenome, data_nasc,email) VALUES
+INSERT INTO usuario(CPF, prenome, sobrenome, data_nasc,email) VALUES
 ('12345678901', 'Ana', 'Silva', '1990-05-15', 'ana_s@mail.com'),
 ('98765432109', 'Bruno', 'Costa', '1985-11-01', 'bruno_c@mail.com'),
 ('31750890034', 'Samuel', 'Cavalcanti', '1991-04-16','samuel_c@mail.com'),
@@ -182,7 +182,7 @@ INSERT INTO usuário(CPF, prenome, sobrenome, data_nasc,email) VALUES
 ('41960010245', 'Tatiana', 'Pinheiro', '2003-08-07', 'tatiana_p@mail.com'),
 ('11122233344', 'Carla', 'Dias', '2001-01-30', 'carla_d@mail.com');
 
-INSERT INTO proprietário(CPF) VALUES
+INSERT INTO proprietario(CPF) VALUES
 ('12345678901'),
 ('10230450611'),
 ('60380450666'),
@@ -205,7 +205,7 @@ INSERT INTO adquirente(CPF, pontuacao_credito) VALUES
 ('52170230456', 930),
 ('55566677788', 790);
 
-INSERT INTO corretor(CPF, especialidade, creci_codigo, regiao_atuação) VALUES
+INSERT INTO corretor(CPF, especialidade, creci_codigo, regiao_atuacao) VALUES
 ('30750890033', 'Casa', '078501', 'Jardins'),
 ('80700890088', 'galpão', '092302', 'Brás'),
 ('21540670823', 'Apartamento', '115403', 'Tatuapé'),
@@ -213,7 +213,7 @@ INSERT INTO corretor(CPF, especialidade, creci_codigo, regiao_atuação) VALUES
 ('31750890034', 'Sala comercial', '150105', 'Santana'),
 ('11122233344', 'Apartamento', '157321', 'Vila Prudente');
 
-INSERT INTO tel_usuário(CPF,telefone) VALUES
+INSERT INTO tel_usuario(CPF,telefone) VALUES
 ('12345678901', '11987654321'),
 ('98765432109', '11976543210'),
 ('11122233344', '11988887777'),
@@ -239,8 +239,8 @@ INSERT INTO tel_usuário(CPF,telefone) VALUES
 ('41960010245','11997778888'),
 ('41960010245','11978889999');
 
-INSERT INTO imóvel(matrícula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, 
-n_reformas, finalidade, logradouro, complemento, número, cep, cidade, CPF_prop,descrição) VALUES
+INSERT INTO imovel(matricula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, 
+n_reformas, finalidade, logradouro, complemento, numero, cep, cidade, CPF_prop,descricao) VALUES
 ('1001001001001001', 2, 850000.00, 80.5, 'Apartamento',true, true, 1, 'Residencial', 
 'Rua Itapura', 'Apto 101', '500', '03310000', 'São Paulo', '12345678901','Apartamento de 2 quartos bem localizado no Tatuapé, próximo ao metrô.'),
 ('1001001001001002', 0, 450000.00, 42.0, 'Sala Comercial', false, true, 0, 'Comercial', 
@@ -262,7 +262,7 @@ n_reformas, finalidade, logradouro, complemento, número, cep, cidade, CPF_prop,
 ('1001001001001010', 0, 600000.00, 45.0, 'Sala Comercial', false, true, 0, 'Comercial',
 'Rua Azevedo Macedo', 'Sala 1010', '80', '02013000', 'São Paulo', '31750890034','Sala comercial reformada em Santana, 45m², pronta para uso.');
 
-INSERT INTO comodidades_imóvel(matrícula,comodidade) VALUES
+INSERT INTO comodidades_imovel(matricula,comodidade) VALUES
 ('1001001001001001', 'Elevador'),
 ('1001001001001001', 'Portaria_24h'),
 ('1001001001001001', 'Salao_De_Festa'),
@@ -302,8 +302,8 @@ INSERT INTO comodidades_imóvel(matrícula,comodidade) VALUES
 ('1001001001001010', 'Portaria_24h'),
 ('1001001001001010', 'Ar_Condicionado');
 
-INSERT INTO contrato(código, valor, status,	data_início, data_fim, tipo, 
-matrícula_imóvel, CPF_prop, CPF_corretor) VALUES
+INSERT INTO contrato(codigo, valor, status,	data_inicio, data_fim, tipo, 
+matricula_imovel, CPF_prop, CPF_corretor) VALUES
 (1, 850000.00, 'Vendido', NULL, NULL, 'Venda', 
 '1001001001001001', '12345678901', '21540670823'),
 (2, 2500.00, 'Ativo', '2025-01-15', '2027-01-14', 'Aluguel', 
@@ -317,7 +317,7 @@ matrícula_imóvel, CPF_prop, CPF_corretor) VALUES
 (6, 2200.00, 'Finalizado', '2023-01-10', '2025-07-09', 'Aluguel', 
 '1001001001001007', '40960010244', '11122233344');
 
-INSERT INTO pagamento(código_c,	n_pagamento, data_vencimento, data_pagamento, 
+INSERT INTO pagamento(codigo_c,	n_pagamento, data_vencimento, data_pagamento, 
 valor, status, forma_pagamento, tipo) VALUES
 (2, 1, '2025-08-15', '2025-08-14', 2500.00, 'Pago', 'PIX', 'Aluguel'),
 (2, 2, '2025-09-15', '2025-09-15', 2500.00, 'Pago', 'Boleto', 'Aluguel'),
@@ -332,7 +332,7 @@ valor, status, forma_pagamento, tipo) VALUES
 (1, 2, '2025-08-01', '2025-08-01', 765000.00, 'Pago', 'Financiamento', 'Principal'),
 (5, 1, '2025-09-10', '2025-09-10', 1800000.00, 'Pago', 'TED', 'Integral');
 
-INSERT INTO assina(CPF_adq, código_c) VALUES
+INSERT INTO assina(CPF_adq, codigo_c) VALUES
 ('98765432109', 1),
 ('50170230455', 2),
 ('12345678901', 3),

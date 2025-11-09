@@ -22,7 +22,7 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
     regiao_atuação = json.get("regiao_atuacao")  #opcional, só se for corretor
 
     if not all([cpf, prenome, sobrenome, data_nasc_str,email,tel_usuario]):
-        return jsonify("Os campos (cpf, prenome, sobrenome, data_nasc,email, telefones) são obrigatorios"), 400
+        return jsonify("Os campos (cpf, prenome, sobrenome, data_nasc,email, telefones) sao obrigatorios"), 400
     
     if proprietario is False and adquirente is False and corretor is False:
         return jsonify("E necessario selecionar ao menos um tipo de usuario (proprietario, adquirente ou corretor)."), 400

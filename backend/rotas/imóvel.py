@@ -70,7 +70,7 @@ def cadastrar_imóvel(): #cadastra um novo imóvel
     matrícula = json.get("matricula")
 
     if not all([cpf_prop, logradouro, número, CEP, cidade, matrícula]):
-        return jsonify("Há campos obrigatorios nao preenchidos"), 400
+        return jsonify("Ha campos obrigatorios nao preenchidos"), 400
 
     registro = ImóvelDatabase().cadastra_imóvel(
         matrícula,
@@ -91,9 +91,9 @@ def cadastrar_imóvel(): #cadastra um novo imóvel
     )
 
     if not registro:
-        return jsonify("Não foi possível cadastrar o imóvel."), 400
+        return jsonify("Nao foi possivel cadastrar o imovel."), 400
 
-    return jsonify("Imóvel cadastrado com sucesso."), 200
+    return jsonify("Imovel cadastrado com sucesso."), 200
 
 @imovel_blueprint.route("/imoveis/alteracao", methods=["PUT"])
 def alterar_imóvel(): #altera alguma carcterística de um imóvel (as comodidades são tratadas em método separado)
@@ -128,7 +128,7 @@ def alterar_imóvel(): #altera alguma carcterística de um imóvel (as comodidad
 
     return jsonify("Imovel alterado com sucesso."), 200
 
-@imovel_blueprint.route("/imoveis/alteraçao/proprietario", methods=["PUT"])
+@imovel_blueprint.route("/imoveis/alteracao/proprietario", methods=["PUT"])
 def alterar_proprietario_imóvel(): #altera o proprietário de um imóvel
     json = request.get_json()
     matrícula = json.get("matricula")

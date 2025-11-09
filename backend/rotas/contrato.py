@@ -24,7 +24,7 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
     CPF_adq = json.get("CPF_adq")
 
     if not all([código, valor, status, data_início_str, data_fim_str, tipo, matrícula_imóvel, CPF_prop, CPF_corretor,CPF_adq]):
-        return jsonify("Todos os campos (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor) são obrigatórios"), 400
+        return jsonify("Todos os campos (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor) sao obrigatorios"), 400
     
     try:
         data_início = datetime.strptime(data_início_str, '%Y-%m-%d').date()
@@ -65,7 +65,7 @@ def deleta_contrato(): #deleta um contrato
     código = json.get("codigo")
 
     if not código:
-        return jsonify("O campo codigo é obrigatorio"), 400
+        return jsonify("O campo codigo e obrigatorio"), 400
 
     registro=ContratoDatabase().deleta_contrato(
         código

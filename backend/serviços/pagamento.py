@@ -2,8 +2,11 @@ from serviços.database.conector import DatabaseManager
 from datetime import date, datetime
 
 class PagamentoDatabase:
-    def __init__(self, db_provider=DatabaseManager()) -> None:
-        self.db = db_provider
+    def __init__(self, db_provider=None) -> None:
+        if db_provider is None:
+            self.db = DatabaseManager()
+        else:
+            self.db = db_provider
 
     def insere_pagamento(self, codigo_c:int, n_pagamento:int, data_vencimento:date, data_pagamento:date, valor:float, status:str, forma_pagamento:str, tipo:str): #insere um pagamento referente a um contrato
         statement = f"""

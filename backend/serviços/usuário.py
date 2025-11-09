@@ -3,8 +3,11 @@ from serviços.database.conector import DatabaseManager
 from datetime import date, datetime
 
 class UsuárioDatabase:
-    def __init__(self, db_provider=DatabaseManager()) -> None:
-        self.db = db_provider
+    def __init__(self, db_provider=None) -> None:
+        if db_provider is None:
+            self.db = DatabaseManager()
+        else:
+            self.db = db_provider
 
     def insere_usuário(self, cpf: str, prenome: str, sobrenome: str, data_nasc:date, email:str): #cadastra um usuário (sem ainda colocar de qual/quais tipos ele é)
         statement = f"""

@@ -2,8 +2,11 @@ from serviços.database.conector import DatabaseManager
 from datetime import date, datetime, timedelta
 
 class ContratoDatabase:
-    def __init__(self, db_provider=DatabaseManager()) -> None:
-        self.db = db_provider
+    def __init__(self, db_provider=None) -> None:
+        if db_provider is None:
+            self.db = DatabaseManager()
+        else:
+            self.db = db_provider
 
     def get_prazo_contrato(self): #obtém contratos perto de vencer (em até 30 dias)
         dias_ate_vencer=30

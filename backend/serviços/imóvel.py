@@ -3,8 +3,11 @@ from serviços.database.conector import DatabaseManager
 from serviços.contrato import ContratoDatabase
 
 class ImóvelDatabase:
-    def __init__(self, db_provider=DatabaseManager()) -> None:
-        self.db = db_provider
+    def __init__(self, db_provider=None) -> None:
+        if db_provider is None:
+            self.db = DatabaseManager()
+        else:
+            self.db = db_provider
 
     def filtra_imoveis(self, valor_venal_min: float ,valor_venal_max: float, logradouro:str, numero:str, CEP: str, cidade: str, metragem_min: float, metragem_max:float, finalidade:str, tipo: str, n_quartos: int, n_reformas: int, possui_garagem: bool, mobiliado: bool, CPF_prop:str, matricula:str, comodidade:str): #filtra imóveis de acordo com uma série de características (vc ecolhe quantas e quais)
         query = """

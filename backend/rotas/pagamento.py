@@ -1,10 +1,12 @@
 from datetime import datetime
 from flask import Blueprint, jsonify, request
 from serviços.pagamento import PagamentoDatabase
+from utils.token_middleware import token_obrigatorio
 
 pagamento_blueprint = Blueprint("pagamento", __name__)
 
 @pagamento_blueprint.route("/pagamento/cadastro", methods=["POST"])
+@token_obrigatorio
 def cadastra_pagamento(): #insere um pagamento referente a um contrato
     json = request.get_json()
     código_c = json.get("codigo_contrato")
@@ -43,6 +45,7 @@ def cadastra_pagamento(): #insere um pagamento referente a um contrato
     return jsonify("Pagamento inserido corretamente."), 200
 
 @pagamento_blueprint.route("/pagamento/status", methods=["GET"])
+@token_obrigatorio
 def verifica_status_pagamento(): #pega o status de um pagamento (se tiver passado a data de vencimento já muda para atrasado)
     código_c = request.args.get("codigo_contrato", "")
     n_pagamento = request.args.get("n_pagamento", "")
@@ -61,6 +64,7 @@ def verifica_status_pagamento(): #pega o status de um pagamento (se tiver passad
     return jsonify(status), 200
 
 @pagamento_blueprint.route("/pagamento/atualiza_status", methods=["PUT"])
+@token_obrigatorio
 def atualiza_status_pagamento():  #muda o status de um pagamento de um contrato
     json = request.get_json()
     código_c = json.get("codigo_contrato")
@@ -82,13 +86,15 @@ def atualiza_status_pagamento():  #muda o status de um pagamento de um contrato
     return jsonify("Status do pagamento atualizado corretamente."), 200
 
 @pagamento_blueprint.route("/pagamento/extrato-imovel", methods=["GET"])
+@token_obrigatorio
 def get_extrato_pagamento_imóvel(): #obtem o extrato financeiro por contrato (quantos e quais pagamentos já foram realizados)
     matrícula_imóvel=request.args.get("matricula","")
     return jsonify(PagamentoDatabase().get_extrato_pagamento_contrato(
         matrícula_imóvel)),200
     
 @pagamento_blueprint.route("/pagamento/extrato-adquirente", methods=["GET"])
+@token_obrigatorio
 def get_extrato_pagamento_adquirente(): #obtem o extrato financeiro por adquirente
-    CPF_adq=request.args.get("cpf_adq","")
+    cpf_logado = request.cpf_usuario #usa o CPF seguro
     return jsonify(PagamentoDatabase().get_extrato_pagamento_adquirente(
-        CPF_adq)),200
+        cpf_logado)),200

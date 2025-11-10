@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from serviços.imóvel import ImóvelDatabase
+from utils.token_middleware import token_obrigatorio
 
 imovel_blueprint = Blueprint("imovel", __name__)
 
@@ -51,6 +52,7 @@ def verifica_status_imóveis(): #obtém os status de um imóvel (se a data de fi
     )), 200
 
 @imovel_blueprint.route("/imoveis/cadastro", methods=["POST"])
+@token_obrigatorio
 def cadastrar_imóvel(): #cadastra um novo imóvel
     json = request.get_json()
     cpf_prop = json.get("cpf_prop")
@@ -96,6 +98,7 @@ def cadastrar_imóvel(): #cadastra um novo imóvel
     return jsonify("Imovel cadastrado com sucesso."), 200
 
 @imovel_blueprint.route("/imoveis/alteracao", methods=["PUT"])
+@token_obrigatorio
 def alterar_imóvel(): #altera alguma carcterística de um imóvel (as comodidades são tratadas em método separado)
     json = request.get_json()
     matrícula = json.get("matricula")
@@ -129,6 +132,7 @@ def alterar_imóvel(): #altera alguma carcterística de um imóvel (as comodidad
     return jsonify("Imovel alterado com sucesso."), 200
 
 @imovel_blueprint.route("/imoveis/alteracao/proprietario", methods=["PUT"])
+@token_obrigatorio
 def alterar_proprietario_imóvel(): #altera o proprietário de um imóvel
     json = request.get_json()
     matrícula = json.get("matricula")
@@ -148,6 +152,7 @@ def alterar_proprietario_imóvel(): #altera o proprietário de um imóvel
     return jsonify("Proprietario do imovel alterado com sucesso."), 200
 
 @imovel_blueprint.route("/imoveis/comodidades", methods=["POST"])
+@token_obrigatorio
 def adiciona_comodidades_imóvel(): #adiciona comodidades a um imóvel
     json = request.get_json()
     matrícula = json.get("matricula")
@@ -167,6 +172,7 @@ def adiciona_comodidades_imóvel(): #adiciona comodidades a um imóvel
     return jsonify("Comodidades adicionadas com sucesso."), 200
 
 @imovel_blueprint.route("/imoveis/comodidades", methods=["DELETE"])
+@token_obrigatorio
 def remove_comodidades_imóvel(): #remove as comodiades de um imóvel (através desse e do adicionar que alteramos as comodidades de um imóvel)
     json = request.get_json()
     matrícula = json.get("matricula")
@@ -186,6 +192,7 @@ def remove_comodidades_imóvel(): #remove as comodiades de um imóvel (através 
     return jsonify("Comodidades removidas com sucesso."), 200
 
 @imovel_blueprint.route("/imoveis/deleta", methods=["DELETE"])
+@token_obrigatorio
 def deleta_imóvel(): #deleta um imóvel
     json = request.get_json()
     matrícula = json.get("matricula")

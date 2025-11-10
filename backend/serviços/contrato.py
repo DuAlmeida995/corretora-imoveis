@@ -13,59 +13,64 @@ class ContratoDatabase:
         data_hoje_obj = datetime.now().date() 
         data_futura_obj = data_hoje_obj + timedelta(days=dias_ate_vencer)  
         
-        data_hoje_str = data_hoje_obj.isoformat()
-        data_futura_str = data_futura_obj.isoformat()
-        
-        query = f"""
+        # As datas não são mais injetadas na string
+        query = """
                 SELECT * FROM contrato
                 WHERE tipo='Aluguel' AND status = 'Ativo' AND
-                data_fim BETWEEN '{data_hoje_str}' AND '{data_futura_str}';
-
+                data_fim BETWEEN %s AND %s;
         """
-        return self.db.execute_select_all(query)
+        # Os valores são passados como parâmetros
+        params = (data_hoje_obj, data_futura_obj)
+        
+        return self.db.execute_select_all(query, params)
     
     def insere_contrato(self, codigo:int, valor:float, status:str,data_inicio:date, data_fim:date, tipo:str, matricula_imovel:str, CPF_prop:str, CPF_corretor:str): #insere um novo contrato
-        statement = f"""
+        statement = """
             INSERT INTO contrato (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor)
-            VALUES ({codigo}, {valor}, '{status}', '{data_inicio}', '{data_fim}', '{tipo}', '{matricula_imovel}', '{CPF_prop}', '{CPF_corretor}'); \n
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
         """
+        params = (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor)
         
-        return self.db.execute_statement(statement)
+        return self.db.execute_statement(statement, params)
     
     def completa_adquirente(self, CPF_adq:str, codigo_c:int): #completa a tabela adquirente
-       statement = f"""
-            INSERT INTO assina(CPF_adq, codigo_c) VALUES ('{CPF_adq}', {codigo_c}); \n
+       statement = """
+            INSERT INTO assina(CPF_adq, codigo_c) VALUES (%s, %s);
         """ 
-       return self.db.execute_statement(statement)
+       params = (CPF_adq, codigo_c)
+       return self.db.execute_statement(statement, params)
 
     
     def deleta_contrato(self, codigo:int): #deleta um contrato
-        statement = f"""
+        statement = """
             DELETE FROM contrato
-            WHERE codigo = {codigo}; \n
+            WHERE codigo = %s;
         """
-        return self.db.execute_statement(statement) 
+        # (codigo,) - A vírgula é crucial para criar uma tupla de um item
+        return self.db.execute_statement(statement, (codigo,)) 
     
     def altera_status_contrato(self, codigo:int, status:str): #altera status de um contrato
-        statement = f"""
+        statement = """
             UPDATE contrato
             SET 
-                status = '{status}'
-            WHERE codigo = {codigo}; \n
+                status = %s
+            WHERE codigo = %s;
         """
-        return self.db.execute_statement(statement)
+        params = (status, codigo)
+        return self.db.execute_statement(statement, params)
     
     def get_período_aluguéis_imóvel(self, matricula_imovel:str): #obtém os períodos dos contratos de aluguel de um imóvel
-        statement=f"""
+        statement="""
         SELECT codigo, matricula_imovel,data_inicio,data_fim FROM contrato
-        WHERE tipo='Aluguel' AND matricula_imovel='{matricula_imovel}'
+        WHERE tipo='Aluguel' AND matricula_imovel=%s
         ORDER BY data_inicio DESC;
         """
-
-        return self.db.execute_select_all(statement)
+        params = (matricula_imovel,)
+        return self.db.execute_select_all(statement, params)
 
     def get_alugueis_ativos(self): #obtém contratos de alguel ativos
-        statement=f""" 
+        # Esta consulta não tem input do usuário, então é segura como estava.
+        statement=""" 
         SELECT c.codigo,c.status, c.data_inicio, c.data_fim, c.valor, i.matricula, i.logradouro, i.numero
         FROM contrato c
         JOIN imovel i ON c.matricula_imovel = i.matricula
@@ -74,16 +79,17 @@ class ContratoDatabase:
         return self.db.execute_select_all(statement)
     
     def get_valores_contratos_imóvel(self, matricula_imovel:str): #obtém histórico de valores dos contratos de um imóvel
-        statement=f"""
+        statement="""
         SELECT codigo,matricula_imovel,valor FROM contrato 
-        WHERE matricula_imovel='{matricula_imovel}' 
+        WHERE matricula_imovel=%s 
         ORDER BY codigo DESC;
         """
-
-        return self.db.execute_select_all(statement)
+        params = (matricula_imovel,)
+        return self.db.execute_select_all(statement, params)
     
     def get_mais_alugados(self): #obtém os imóveis mais alugados
-        statement=f"""
+        # Esta consulta não tem input do usuário, então é segura como estava.
+        statement="""
         SELECT i.matricula, i.logradouro, i.numero, 
         COUNT(c.codigo) AS nr_de_vezes_alugado
         FROM contrato c JOIN imovel i ON c.matricula_imovel = i.matricula
@@ -95,14 +101,14 @@ class ContratoDatabase:
         return self.db.execute_select_all(statement)
     
     def get_histórico_pessoas_imóvel(self, matricula_imovel:str): #devolve o histórico de proprietários e adquirentes de um imóvel por contrato
-        statement=f"""      
+        statement="""      
         SELECT c.codigo, c.tipo, c.status, prop.prenome AS proprietario_nome, prop.sobrenome AS proprietario_sobrenome, adq.prenome AS adquirente_nome, adq.sobrenome AS adquirente_sobrenome
         FROM contrato c
         JOIN usuario prop ON c.CPF_prop = prop.CPF
         LEFT JOIN assina a ON c.codigo = a.codigo_c
         LEFT JOIN usuario adq ON a.CPF_adq = adq.CPF
-        WHERE c.matricula_imovel = '{matricula_imovel}'
+        WHERE c.matricula_imovel = %s
         ORDER BY c.codigo DESC;
         """
-
-        return self.db.execute_select_all(statement)
+        params = (matricula_imovel,)
+        return self.db.execute_select_all(statement, params)

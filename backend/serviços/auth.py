@@ -1,5 +1,5 @@
 from serviços.database.conector import DatabaseManager
-from rotas.utils.hash import verificar_hash_senha 
+from utils.hash import verificar_hash_senha 
 import datetime
 import jwt
 

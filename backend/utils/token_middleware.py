@@ -19,7 +19,7 @@ def token_obrigatorio(f):
             payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             
             if payload["type"] != "access":
-                return jsonify({"error": "Token inválido (não é de acesso)"}), 401
+                return jsonify({"error": "Token inválido (não é de acesso)"}), 401 
             
             #anexa o CPF do usuário à requisição para uso posterior
             request.cpf_usuario = payload["cpf"] 

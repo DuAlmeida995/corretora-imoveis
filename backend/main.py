@@ -27,4 +27,4 @@ app.register_blueprint(pagamento_blueprint)
 app.register_blueprint(auth_blueprint) 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True) #liguei o debug
+    app.run(host="0.0.0.0", port=8000, debug=False) #liguei o debug

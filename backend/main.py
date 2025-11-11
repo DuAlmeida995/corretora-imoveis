@@ -10,9 +10,7 @@ import os
 
 app = Flask(__name__)
 
-# 2. CONFIGURE A SECRET_KEY
-#    (Mude para uma string longa e aleatória)
-app.config['SECRET_KEY'] = "sua_chave_secreta_super_segura_mude_isso_depois" 
+app.config['SECRET_KEY'] = "'ba632747b4b0046d63f2b0bf86a15015ea967f477363b3255b3340e9f59aba3b'" 
 
 CORS(app, origins="*")
 

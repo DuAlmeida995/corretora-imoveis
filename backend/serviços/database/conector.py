@@ -15,27 +15,51 @@ class DatabaseManager:
         )
         self.cursor = self.conn.cursor(cursor_factory=DictCursor)
 
-    def execute_statement(self, statement: str) -> bool:
-        "Usado para Inserções, Deleções, Alter Tables"
-        try:
-            self.cursor.execute(statement)
-            self.conn.commit()
-        except:
-            self.conn.reset()
-            return False
-        return True
+
+    def __execute_query(self, statement: str, params: tuple = None, fetch_one=False, fetch_all=False):
+        """
+        Método privado para executar consultas de forma segura.
+        """
+        if self.conn is None:
+            raise ConnectionError("Conexão com o banco de dados não está ativa.")
         
-    def execute_select_all(self, query: str) -> list[dict[str, Any]]:
-        "Usado para SELECTS no geral"
-        self.cursor.execute(query)
-        return [dict(item) for item in self.cursor.fetchall()]
-    
-    def execute_select_one(self, query: str) -> dict | None:
-        "Usado para SELECT com apenas uma linha de resposta"
-        self.cursor.execute(query)
-        query_result = self.cursor.fetchone()
+        #usamos DictCursor para que os resultados sejam dicionarios
+        with self.conn.cursor(cursor_factory=DictCursor) as cursor:
+            try:
+                if params:
+                    cursor.execute(statement, params)
+                else:
+                    cursor.execute(statement)
 
-        if not query_result:
-            return None
+                # Para SELECT
+                if fetch_one:
+                    return cursor.fetchone()
+                if fetch_all:
+                    return cursor.fetchall()
 
-        return dict(query_result)
+                # Para INSERT/UPDATE/DELETE
+                self.conn.commit()
+                return True
+            
+            except Exception as e:
+                self.conn.rollback() # Desfaz a transação em caso de erro
+                print(f"Erro ao executar statement: {e}")
+                # Propaga o erro para a camada de serviço/rota
+                raise e
+
+    def execute_statement(self, statement: str, params: tuple = None):
+        """ Executa INSERT, UPDATE, DELETE (e commita) """
+        return self.__execute_query(statement, params)
+
+    def execute_select_one(self, statement: str, params: tuple = None):
+        """ Executa um SELECT e retorna UMA linha """
+        return self.__execute_query(statement, params, fetch_one=True)
+
+    def execute_select_all(self, statement: str, params: tuple = None):
+        """ Executa um SELECT e retorna TODAS as linhas """
+        return self.__execute_query(statement, params, fetch_all=True)
+
+    def __del__(self):
+        """ Garante que a conexão seja fechada """
+        if self.conn:
+            self.conn.close()

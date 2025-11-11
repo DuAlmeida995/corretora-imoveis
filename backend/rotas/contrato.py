@@ -1,14 +1,17 @@
 from flask import Blueprint, jsonify, request
 from serviços.contrato import ContratoDatabase
 from datetime import datetime
+from utils.token_middleware import token_obrigatorio
 
 contrato_blueprint = Blueprint("contrato", __name__)
 
-@contrato_blueprint.route("/contratos/prazo", methods=["GET"]) 
+@contrato_blueprint.route("/contratos/prazo", methods=["GET"])
+@token_obrigatorio
 def contratos_prazo():  #obtém contratos perto de vencer (em até 30 dias)
     return jsonify(ContratoDatabase().get_prazo_contrato()), 200
 
 @contrato_blueprint.route("/contratos/cadastro", methods=["POST"])
+@token_obrigatorio
 def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina (liga o contrato ao adquirente)
     json = request.get_json()
     código = json.get("codigo")
@@ -19,11 +22,10 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
     tipo = json.get("tipo")
     matrícula_imóvel = json.get("matricula_imovel")
     CPF_prop = json.get("CPF_prop")
-    CPF_corretor = json.get("CPF_corretor")
-
+    CPF_logado_corretor = request.cpf_usuario  #usar o cpf do token para maior segurança
     CPF_adq = json.get("CPF_adq")
 
-    if not all([código, valor, status, data_início_str, data_fim_str, tipo, matrícula_imóvel, CPF_prop, CPF_corretor,CPF_adq]):
+    if not all([código, valor, status, data_início_str, data_fim_str, tipo, matrícula_imóvel, CPF_prop, CPF_logado_corretor,CPF_adq]):
         return jsonify("Todos os campos (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor) sao obrigatorios"), 400
     
     try:
@@ -41,7 +43,7 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
         tipo,
         matrícula_imóvel,
         CPF_prop,
-        CPF_corretor
+        CPF_logado_corretor
     )
 
     registro2=ContratoDatabase().completa_adquirente(
@@ -60,6 +62,7 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
 
 
 @contrato_blueprint.route("/contratos/deleta", methods=["DELETE"])
+@token_obrigatorio
 def deleta_contrato(): #deleta um contrato
     json = request.get_json()
     código = json.get("codigo")
@@ -77,6 +80,7 @@ def deleta_contrato(): #deleta um contrato
     return jsonify("Contrato deletado corretamente."), 200
 
 @contrato_blueprint.route("/contratos/alterar-status", methods=["PUT"])
+@token_obrigatorio
 def alterar_status_contrato(): #altera status de um contrato
     json = request.get_json()
     código = json.get("codigo")
@@ -96,6 +100,7 @@ def alterar_status_contrato(): #altera status de um contrato
     return jsonify("Status do contrato alterado corretamente."), 200
 
 @contrato_blueprint.route("/contratos/obter-periodo-aluguel",  methods=["GET"])
+@token_obrigatorio
 def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel de um imóvel
     matrícula = request.args.get("matricula", "")
 
@@ -106,20 +111,24 @@ def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel
     return jsonify(registro),200
 
 @contrato_blueprint.route("/contratos/alugueis-ativos", methods=["GET"])
+@token_obrigatorio
 def get_alugueis_ativos(): #obtém contratos de alguel ativos
     return jsonify(ContratoDatabase().get_alugueis_ativos()),200
 
 @contrato_blueprint.route("/contratos/obter-valores-imovel",  methods=["GET"])
+@token_obrigatorio
 def get_valores_contrato_imóvel(): #obtém histórico de valores dos contratos de um imóvel
     return jsonify(ContratoDatabase().get_valores_contratos_imóvel(
         matrícula_imóvel = request.args.get("matricula", "")
     )),200
 
 @contrato_blueprint.route("/contratos/obter-mais-alugados",  methods=["GET"])
+@token_obrigatorio
 def get_mais_alugados(): #obtém os imóveis mais alugados
     return jsonify(ContratoDatabase().get_mais_alugados()),200
 
 @contrato_blueprint.route("/contratos/obter-pessoas-imovel",  methods=["GET"])
+@token_obrigatorio
 def get_histórico_pessoas_imóvel(): #devolve o histórico de proprietários e adquirentes de um imóvel por contrato
     matrícula = request.args.get("matricula", "")
     return jsonify(ContratoDatabase().get_histórico_pessoas_imóvel(

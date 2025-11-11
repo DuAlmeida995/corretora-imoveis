@@ -1,6 +1,8 @@
 from datetime import datetime
 from flask import Blueprint, jsonify, request
 from serviços.usuário import UsuárioDatabase
+from utils.hash import gerar_hash_senha 
+from utils.token_middleware import token_obrigatorio
 
 usuário_blueprint = Blueprint("usuario", __name__)
 
@@ -12,6 +14,7 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
     sobrenome = json.get("sobrenome")
     data_nasc_str = json.get("data_nasc")
     email = json.get("email")
+    senha = json.get("senha") 
     tel_usuario = json.get("telefones") #aqui vc passa uma lista separada por vírgula
     proprietario = json.get("proprietario")  #opcional, só se for proprietário
     adquirente = json.get("adquirente")  #opcional, só se for adquirente
@@ -21,8 +24,8 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
     creci = json.get("creci")  #opcional, só se for corretor
     regiao_atuação = json.get("regiao_atuacao")  #opcional, só se for corretor
 
-    if not all([cpf, prenome, sobrenome, data_nasc_str,email,tel_usuario]):
-        return jsonify("Os campos (cpf, prenome, sobrenome, data_nasc,email, telefones) sao obrigatorios"), 400
+    if not all([cpf, prenome, sobrenome, data_nasc_str, email, senha, tel_usuario]):
+        return jsonify("Todos os campos (cpf, prenome, sobrenome, data_nasc, email, senha, telefones) sao obrigatorios"), 400
     
     if proprietario is False and adquirente is False and corretor is False:
         return jsonify("E necessario selecionar ao menos um tipo de usuario (proprietario, adquirente ou corretor)."), 400
@@ -44,6 +47,13 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
         )
     except Exception as e_usuário:
         return jsonify("Nao foi possivel criar usuario."), 400
+    
+    try:
+        hash_da_senha = gerar_hash_senha(senha)  #gera o hash da senha
+        db_service.insere_login(cpf, hash_da_senha) #salva o hash no banco de dados
+    except Exception as e_login:
+        db_service.deleta_usuário(cpf) #se der erro ao criar o login, desfaz o cadastro do usuário
+        return jsonify(f"Nao foi possivel criar o login (verifique se o 'ALTER TABLE' foi feito). Cadastro desfeito. Erro: {e_login}"), 400
 
     try:
         db_service.insere_lista_tel_usuário(
@@ -83,16 +93,17 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
   
 
 @usuário_blueprint.route("/usuario/telefones", methods=["POST"])
+@token_obrigatorio
 def adiciona_telefones_usuário(): #insere os telefones de um usuário (aqui vc passa uma lista separada por vírgula)
+    cpf_logado = request.cpf_usuario  #usar o cpf do token para maior segurança
     json = request.get_json()
-    cpf =  json.get("cpf")
     tel_usuario = json.get("telefones") #aqui vc passa uma lista separada por vírgula
 
-    if not all([cpf, tel_usuario]):
+    if not all([cpf_logado, tel_usuario]):
         return jsonify("Todos os campos (cpf, telefones) sao obrigatorios"), 400
 
     registro_tel=UsuárioDatabase().insere_lista_tel_usuário(
-        cpf,
+        cpf_logado, #usar o cpf do token para maior segurança
         tel_usuario
     )
 
@@ -103,17 +114,18 @@ def adiciona_telefones_usuário(): #insere os telefones de um usuário (aqui vc 
     return jsonify("Cadastaro realizado com sucesso."), 200
 
 @usuário_blueprint.route("/usuario/telefones", methods=["DELETE"])
+@token_obrigatorio
 def remove_telefones_usuário():  # remove os telefones de um usuário (aqui vc passa uma lista separada por vírgula)
+    cpf_logado = request.cpf_usuario  #usar o cpf do token para maior segurança
     json = request.get_json()
-    cpf =  json.get("cpf")
     tel_usuario = json.get("telefones") #aqui vc passa uma lista separada por vírgula
 
-    if not all([cpf, tel_usuario]):
+    if not all([cpf_logado, tel_usuario]):
         return jsonify("Todos os campos (cpf, telefones) sao obrigatorios"), 400
     
 
     registro_tel=UsuárioDatabase().deleta_tel_usuário(
-        cpf,
+        cpf_logado, #usar o cpf do token para maior segurança
         tel_usuario
     )
 
@@ -123,16 +135,17 @@ def remove_telefones_usuário():  # remove os telefones de um usuário (aqui vc 
     return jsonify("Telefones removidos com sucesso."), 200
 
 @usuário_blueprint.route("/usuario/deleta", methods=["DELETE"])
+@token_obrigatorio
 def deleta_usuário(): #deleta um usuário (e consequentemente seus telefones, por ter o on delete cascade no bd)
+    cpf_logado = request.cpf_usuario  #usar o cpf do token para maior segurança
     json = request.get_json()
-    cpf =  json.get("cpf")
 
-    if not cpf:
+    if not cpf_logado:
         return jsonify("Campo cpf e obrigatorio"), 400
     
 
     registro=UsuárioDatabase().deleta_usuário(
-        cpf
+        cpf_logado #usar o cpf do token para maior segurança
     )
 
     if not registro:
@@ -141,16 +154,29 @@ def deleta_usuário(): #deleta um usuário (e consequentemente seus telefones, p
     return jsonify("Usuario deletado com sucesso."), 200
 
 @usuário_blueprint.route("/usuario/perfis-imoveis", methods=["GET"])
+@token_obrigatorio
 def get_perfil_imóvel_adquirente():  #obtém o perfil de imóveis de um adquirente
-    cpf = request.args.get("cpf", "")
+    cpf_logado = request.cpf_usuario
 
-    return jsonify(UsuárioDatabase().get_perfil_imóvel_adquirente(
-        cpf)),200
+    try:
+        perfil = UsuárioDatabase().get_perfil_imóvel_adquirente(
+            cpf_logado #usa o CPF seguro
+        )
+        return jsonify(perfil), 200
+    except Exception as e:
+        return jsonify(f"Nao foi possivel obter o perfil do adquirente. Erro: {e}"), 400
+
 
 @usuário_blueprint.route("/usuario/imoveis-proprietario", methods=["GET"])
+@token_obrigatorio
 def get_info_imóvel_proprietário(): #obtém os imóveis de um proprietário, fornecendo status sobre eles
-    CPF_prop=request.args.get("cpf_proprietario", "")
-
-    return jsonify(UsuárioDatabase().get_info_imóvel_proprietário(
-        CPF_prop)),200
+    cpf_logado = request.cpf_usuario
+    
+    try:
+        info = UsuárioDatabase().get_info_imóvel_proprietário(
+            cpf_logado #usa o CPF seguro
+        )
+        return jsonify(info), 200
+    except Exception as e:
+        return jsonify(f"Nao foi possivel obter as informacoes do proprietario. Erro: {e}"), 400
 

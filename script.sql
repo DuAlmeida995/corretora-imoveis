@@ -485,9 +485,11 @@ INSERT INTO comodidades_imovel(matricula,comodidade) VALUES
 ('1001001001001001', 'Salao_De_Festa'),
 ('1001001001001001', 'Academia'),
 ('1001001001001001', 'Varanda'),
+
 ('1001001001001002', 'Elevador'),
 ('1001001001001002', 'Portaria_24h'),
 ('1001001001001002', 'Ar_Condicionado'),
+
 ('1001001001001003', 'Elevador'),
 ('1001001001001003', 'Portaria_24h'),
 ('1001001001001003', 'Salao_De_Festa'),
@@ -496,51 +498,122 @@ INSERT INTO comodidades_imovel(matricula,comodidade) VALUES
 ('1001001001001003', 'Academia'),
 ('1001001001001003', 'Varanda'),
 ('1001001001001003', 'Playground'),
+
 ('1001001001001004', 'Elevador'),
 ('1001001001001004', 'Academia'),
 ('1001001001001004', 'Pet_Friendly'),
+
 ('1001001001001005', 'Elevador'),
 ('1001001001001005', 'Portaria_24h'),
 ('1001001001001005', 'Salao_De_Festa'),
 ('1001001001001005', 'Playground'),
+
 ('1001001001001006', 'Piscina'),
 ('1001001001001006', 'Churrasqueira'),
 ('1001001001001006', 'Ar_Condicionado'),
+
 ('1001001001001007', 'Elevador'),
 ('1001001001001007', 'Portaria_24h'),
 ('1001001001001007', 'Varanda'),
 ('1001001001001007', 'Pet_Friendly'),
 ('1001001001001007', 'Academia'),
+
 ('1001001001001008', 'Piscina'),
 ('1001001001001008', 'Churrasqueira'),
 ('1001001001001008', 'Ar_Condicionado'),
+
 ('1001001001001009', 'Ar_Condicionado'),
+
 ('1001001001001010', 'Elevador'),
 ('1001001001001010', 'Portaria_24h'),
 ('1001001001001010', 'Ar_Condicionado'),
+
+('1001001001001011', 'Churrasqueira'),
+
+('1001001001001012', 'Elevador'),
+('1001001001001012', 'Portaria_24h'),
+('1001001001001012', 'Salao_De_Festa'),
+('1001001001001012', 'Playground'),
+
 ('1001001001001013', 'Elevador'),
 ('1001001001001013', 'Portaria_24h'),
 ('1001001001001013', 'Varanda'),
 ('1001001001001013', 'Academia'),
 ('1001001001001013', 'Salao_De_Festa'),
+
+('1001001001001014', 'Churrasqueira'),
+('1001001001001014', 'Ar_Condicionado'),
+('1001001001001014', 'Pet_Friendly'),
+
 ('1001001001001017', 'Elevador'),
 ('1001001001001017', 'Portaria_24h'),
+
+('1001001001001018', 'Elevador'),
+('1001001001001018', 'Portaria_24h'),
+('1001001001001018', 'Ar_Condicionado'),
+
 ('1001001001001019', 'Elevador'),
 ('1001001001001019', 'Portaria_24h'),
 ('1001001001001019', 'Playground'),
 ('1001001001001019', 'Salao_De_Festa'),
+
+('1001001001001020', 'Elevador'),
+('1001001001001020', 'Portaria_24h'),
+('1001001001001020', 'Ar_Condicionado'),
+
 ('1001001001001021', 'Piscina'),
 ('1001001001001021', 'Churrasqueira'),
+
+('1001001001001022', 'Elevador'),
+('1001001001001022', 'Portaria_24h'),
+('1001001001001022', 'Academia'),
+('1001001001001022', 'Piscina'),
+('1001001001001022', 'Varanda'),
+('1001001001001022', 'Salao_De_Festa'),
+
+('1001001001001023', 'Elevador'),
+('1001001001001023', 'Playground'),
+('1001001001001023', 'Salao_De_Festa'),
+('1001001001001023', 'Portaria_24h'),
+
+('1001001001001024', 'Churrasqueira'),
+
+('1001001001001027', 'Elevador'),
+('1001001001001027', 'Portaria_24h'),
+('1001001001001027', 'Academia'),
+('1001001001001027', 'Pet_Friendly'),
+('1001001001001027', 'Ar_Condicionado'),
+
+('1001001001001028', 'Elevador'),
+('1001001001001028', 'Portaria_24h'),
+
 ('1001001001001030', 'Piscina'),
 ('1001001001001030', 'Churrasqueira'),
 ('1001001001001030', 'Ar_Condicionado'),
 ('1001001001001030', 'Pet_Friendly'),
+
 ('1001001001001032', 'Elevador'),
 ('1001001001001032', 'Portaria_24h'),
 ('1001001001001032', 'Piscina'),
 ('1001001001001032', 'Academia'),
 ('1001001001001032', 'Varanda'),
-('1001001001001032', 'Salao_De_Festa');
+('1001001001001032', 'Salao_De_Festa'),
+
+('1001001001001033', 'Elevador'),
+('1001001001001033', 'Portaria_24h'),
+('1001001001001033', 'Academia'),
+('1001001001001033', 'Pet_Friendly'),
+
+('1001001001001034', 'Elevador'),
+('1001001001001034', 'Portaria_24h'),
+('1001001001001034', 'Ar_Condicionado'),
+
+('1001001001001035', 'Elevador'),
+('1001001001001035', 'Portaria_24h'),
+('1001001001001035', 'Varanda'),
+('1001001001001035', 'Academia'),
+('1001001001001035', 'Playground'),
+('1001001001001035', 'Salao_De_Festa');
 
 INSERT INTO contrato(codigo, valor, status,	data_inicio, data_fim, tipo, 
 matricula_imovel, CPF_prop, CPF_corretor) VALUES

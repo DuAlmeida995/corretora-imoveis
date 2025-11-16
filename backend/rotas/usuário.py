@@ -83,7 +83,7 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
             registro3 = db_service.insere_corretor(cpf, especialidade, creci, regiao_atuação)
             if not registro3:
                 return jsonify("Nao foi possivel cadastrar como corretor."), 400
-        return jsonify("Cadastro realizado com sucesso."), 200
+        return jsonify({"message": "Cadastro realizado com sucesso."}), 200
     except Exception as e_tipo:
         try:
             db_service.deleta_usuário(cpf)
@@ -108,10 +108,9 @@ def adiciona_telefones_usuário(): #insere os telefones de um usuário (aqui vc 
     )
 
     if not registro_tel:
+        return jsonify({"message": "Nao foi possivel criar usuario."}), 400
 
-        return jsonify("Nao foi possivel efetuar esse cadastro."), 400
-
-    return jsonify("Cadastaro realizado com sucesso."), 200
+    return jsonify({"message": "Cadastro realizado com sucesso."}), 200
 
 @usuário_blueprint.route("/usuario/telefones", methods=["DELETE"])
 @token_obrigatorio

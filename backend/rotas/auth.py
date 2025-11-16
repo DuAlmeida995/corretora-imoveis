@@ -66,6 +66,22 @@ def refresh_token():
 #ela simplesmente reutiliza a lógica de criação de usuário já existente
 @auth_blueprint.route("/register", methods=["POST"])
 def register():
+    print("\n--- INÍCIO LOG DE REGISTRO FLUTTER ---")
+        
+    # Tenta obter o JSON da requisição
+    data = request.get_json(silent=True) # silent=True evita falha se o corpo não for JSON
+    
+    if data is None:
+            print("ERRO: Corpo da Requisição VAZIO ou NÃO É JSON válido.")
+            print(f"Headers Recebidos: {request.headers}")
+            return jsonify({"error": "Dados de registro ausentes ou inválidos."}), 400
+    
+    print(f"JSON RECEBIDO (DATA): {data}")
+    print(f"CPF (Unmasked): {data.get('cpf')}")
+    print(f"Telefones (Raw): {data.get('telefones')}")
+    print(f"Tipo Proprietário: {data.get('proprietario')}")
+    print("--- FIM LOG DE REGISTRO FLUTTER ---\n")
+    
     try:
         from rotas.usuário import cria_usuário_completo
         return cria_usuário_completo()

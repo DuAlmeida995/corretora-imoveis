@@ -11,41 +11,71 @@ class AuthDatabase:
         else:
             self.db = db_provider
 
+    def get_corretor_profile(self, cpf: str):
+        """Busca detalhes específicos do corretor e telefones em uma única query eficiente."""
+        statement = """
+            SELECT 
+                c.especialidade, 
+                c.creci_codigo AS creci, 
+                c.regiao_atuacao,
+                STRING_AGG(t.telefone, ',') AS telefone_contato
+            FROM corretor c
+            LEFT JOIN tel_usuario t ON c.CPF = t.CPF
+            WHERE c.CPF = %s
+            GROUP BY c.CPF, c.especialidade, c.creci_codigo, c.regiao_atuacao;
+        """
+        return self.db.execute_select_one(statement, (cpf,))
+
+    def get_user_telephones(self, cpf: str):
+        """Busca telefones para usuários que não são corretores (fallback)."""
+        statement = """
+            SELECT STRING_AGG(telefone, ',') AS telefone_contato
+            FROM tel_usuario
+            WHERE CPF = %s;
+        """
+        resultado = self.db.execute_select_one(statement, (cpf,))
+        return resultado.get('telefone_contato') if resultado else None
+
     def validar_login(self, cpf: str, senha_fornecida: str):
-        """
-        Verifica o CPF e a senha. Retorna os dados do usuário se for válido.
-        Usa consultas parametrizadas (seguras).
-        """
-        statement_login = "SELECT senha FROM login WHERE CPF = %s" #obtem o hash da senha do login
-
-        try:
-            resultado_login = self.db.execute_select_one(statement_login, (cpf,))
-        except Exception as e:
-            print(f"Erro ao buscar login: {e}")
-            return None
-
-        if not resultado_login:
-            return None #usuário não encontrado
-
-        hash_armazenado = resultado_login['senha']
-
-        if not verificar_hash_senha(senha_fornecida, hash_armazenado):
-            return None #senha inválida
+        """Verifica o CPF e a senha, e retorna os dados completos do usuário/corretor."""
+        
+        statement_login = "SELECT senha FROM login WHERE CPF = %s"
+        resultado_login = self.db.execute_select_one(statement_login, (cpf,))
+        if not resultado_login or not verificar_hash_senha(senha_fornecida, resultado_login['senha']):
+            return None 
 
         statement_usuario = """
             SELECT prenome, sobrenome, email, data_nasc 
             FROM usuario WHERE CPF = %s
         """
-        try:
-            usuario = self.db.execute_select_one(statement_usuario, (cpf,))
-            usuario['cpf'] = cpf 
-            #podemos buscar aqui também outras informações do usuário, se necessário
-
-            return usuario
-
-        except Exception as e:
-            print(f"Erro ao buscar dados do usuário: {e}")
+        usuario = self.db.execute_select_one(statement_usuario, (cpf,))
+        if not usuario:
             return None
+            
+        usuario['cpf'] = cpf
+        
+        corretor_detalhes = self.get_corretor_profile(cpf)
+        
+        if corretor_detalhes:
+            usuario.update({
+                'especialidade': corretor_detalhes.get('especialidade'),
+                'creci': corretor_detalhes.get('creci'),
+                'regiaoAtuacao': corretor_detalhes.get('regiao_atuacao'),
+                'telefone': corretor_detalhes.get('telefone_contato'),
+            })
+        else:
+            usuario.update({
+                'especialidade': None,
+                'creci': None,
+                'regiaoAtuacao': None,
+                'telefone': self.get_user_telephones(cpf) 
+            })
+            
+        for key, value in usuario.items():
+            if value is None:
+                usuario[key] = ''
+
+        return usuario
 
     def criar_tokens(self, cpf: str, secret_key: str):
         """

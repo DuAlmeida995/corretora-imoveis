@@ -33,9 +33,11 @@ class DatabaseManager:
 
                 # Para SELECT
                 if fetch_one:
-                    return cursor.fetchone()
+                    row = cursor.fetchone()
+                    return dict(row) if row else None
                 if fetch_all:
-                    return cursor.fetchall()
+                    rows = cursor.fetchall()
+                    return [dict(r) for r in rows]
 
                 # Para INSERT/UPDATE/DELETE
                 self.conn.commit()

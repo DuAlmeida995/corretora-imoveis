@@ -142,9 +142,10 @@ def update_usuario_perfil():
     prenome = data.get("prenome")
     sobrenome = data.get("sobrenome")
     email = data.get("email")
-    tel_usuario = data.get("telefone") 
+    tel_usuario = data.get("telefone")
+    profile_image_url = data.get("profile_image_url")
 
-    if not all([cpf_logado, prenome, sobrenome, email, tel_usuario]):
+    if not all([cpf_logado, prenome, sobrenome, email, tel_usuario, profile_image_url]):
         return jsonify({"error": "Dados de perfil incompletos."}), 400
 
     db_service = UsuárioDatabase()
@@ -155,7 +156,8 @@ def update_usuario_perfil():
             prenome,
             sobrenome,
             email,
-            tel_usuario
+            tel_usuario,
+            profile_image_url
         )
 
         return jsonify({"message": "Perfil atualizado com sucesso."}), 200

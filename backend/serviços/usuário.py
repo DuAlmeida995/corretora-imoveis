@@ -171,7 +171,7 @@ class UsuárioDatabase:
             
         return resposta
 
-    def atualiza_usuario_perfil(self, cpf: str, prenome: str, sobrenome: str, email: str, tel_usuario: str):
+    def atualiza_usuario_perfil(self, cpf: str, prenome: str, sobrenome: str, email: str, tel_usuario: str, profile_image_url: str):
         """
         Atualiza dados básicos (nome, email) e a lista de telefones do usuário.
         """
@@ -181,10 +181,10 @@ class UsuárioDatabase:
             # 1. ATUALIZAÇÃO NA TABELA USUARIO
             statement_user = """
                 UPDATE usuario
-                SET prenome = %s, sobrenome = %s, email = %s
+                SET prenome = %s, sobrenome = %s, email = %s, profile_image_url = %s
                 WHERE CPF = %s;
             """
-            params_user = (prenome, sobrenome, email, cpf)
+            params_user = (prenome, sobrenome, email, profile_image_url, cpf)
             db.execute_statement(statement_user, params_user)
 
             # 2. ATUALIZAÇÃO NA TABELA TEL_USUARIO (Limpar e Reinserir)
@@ -193,7 +193,6 @@ class UsuárioDatabase:
             if tel_usuario:
                 registro_tel = self.insere_lista_tel_usuário(cpf, tel_usuario)
                 if not registro_tel:
-                    # Se falhar a inserção de telefone (ex: limite), levanta exceção
                     raise Exception("Falha ao inserir a nova lista de telefones.")
             
             return True

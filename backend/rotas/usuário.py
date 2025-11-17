@@ -133,6 +133,37 @@ def remove_telefones_usuário():  # remove os telefones de um usuário (aqui vc 
 
     return jsonify("Telefones removidos com sucesso."), 200
 
+@usuário_blueprint.route("/usuario/perfil/update", methods=["PUT"])
+@token_obrigatorio
+def update_usuario_perfil():
+    cpf_logado = request.cpf_usuario 
+    data = request.get_json()
+
+    prenome = data.get("prenome")
+    sobrenome = data.get("sobrenome")
+    email = data.get("email")
+    tel_usuario = data.get("telefone") 
+
+    if not all([cpf_logado, prenome, sobrenome, email, tel_usuario]):
+        return jsonify({"error": "Dados de perfil incompletos."}), 400
+
+    db_service = UsuárioDatabase()
+
+    try:
+        db_service.atualiza_usuario_perfil(
+            cpf_logado,
+            prenome,
+            sobrenome,
+            email,
+            tel_usuario
+        )
+
+        return jsonify({"message": "Perfil atualizado com sucesso."}), 200
+
+    except Exception as e:
+        print(f"Erro na rota update_usuario_perfil: {e}")
+        return jsonify({"error": "Não foi possível atualizar o perfil. Verifique os dados."}), 500
+
 @usuário_blueprint.route("/usuario/deleta", methods=["DELETE"])
 @token_obrigatorio
 def deleta_usuário(): #deleta um usuário (e consequentemente seus telefones, por ter o on delete cascade no bd)

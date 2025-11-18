@@ -1,8 +1,10 @@
 from datetime import datetime
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, url_for
 from serviços.usuário import UsuárioDatabase
 from utils.hash import gerar_hash_senha 
 from utils.token_middleware import token_obrigatorio
+from werkzeug.utils import secure_filename
+import os
 
 usuário_blueprint = Blueprint("usuario", __name__)
 
@@ -212,3 +214,50 @@ def get_info_imóvel_proprietário(): #obtém os imóveis de um proprietário, f
     except Exception as e:
         return jsonify(f"Nao foi possivel obter as informacoes do proprietario. Erro: {e}"), 400
 
+
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static', 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@usuário_blueprint.route("/usuario/upload_foto_perfil", methods=["POST"])
+@token_obrigatorio
+def upload_foto_perfil():
+    cpf = request.cpf_usuario
+    
+    if 'profile_image_url' not in request.files:
+        return jsonify({"error": "Nenhum arquivo 'foto' encontrado."}), 400
+    
+    file = request.files['profile_image_url']
+
+    # Limite de 5MB para imagem de perfil
+    MAX_FILE_SIZE = 5 * 1024 * 1024 
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+
+    if file_size > MAX_FILE_SIZE:
+        return jsonify({"error": "Arquivo é muito grande (Máx. 5MB)."}), 413
+    
+    if file.filename == '':
+        return jsonify({"error": "Nome do arquivo vazio."}), 400
+    
+    if file and allowed_file(file.filename):
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"{cpf}_profile.{ext}"
+        
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+            
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)        
+        local_url = url_for('static', filename=f'uploads/{filename}', _external=True)
+
+        return jsonify({
+            "message": "Upload realizado com sucesso.",
+            "url": local_url
+        }), 200
+    
+    return jsonify({"error": "Tipo de arquivo não permitido."}), 400

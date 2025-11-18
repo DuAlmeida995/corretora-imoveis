@@ -45,7 +45,7 @@ class AuthDatabase:
             return None 
 
         statement_usuario = """
-            SELECT prenome, sobrenome, email, data_nasc 
+            SELECT prenome, sobrenome, email, data_nasc, profile_image_url
             FROM usuario WHERE CPF = %s
         """
         usuario = self.db.execute_select_one(statement_usuario, (cpf,))

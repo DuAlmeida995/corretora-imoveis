@@ -11,8 +11,10 @@ class ImóvelDatabase:
 
     def filtra_imoveis(self, valor_venal_min: float ,valor_venal_max: float, logradouro:str, numero:str, CEP: str, cidade: str, metragem_min: float, metragem_max:float, finalidade:str, tipo: str, n_quartos: int, n_reformas: int, possui_garagem: bool, mobiliado: bool, CPF_prop:str, matricula:str, bairro:str,comodidade:str): #filtra imóveis de acordo com uma série de características (vc ecolhe quantas e quais)
         query = """
-                SELECT DISTINCT i.* FROM imovel i
+                SELECT DISTINCT i.*, array_agg(DISTINCT img.imovel_image_url) AS imagens
+                FROM imovel i
                 LEFT JOIN comodidades_imovel c ON i.matricula = c.matricula
+                LEFT JOIN imagem_imovel img ON i.matricula = img.matricula
                 """
         
         where_conditions = []
@@ -64,7 +66,7 @@ class ImóvelDatabase:
             params.append(n_quartos)
 
         if n_reformas is not None:
-            where_conditions.append("i.n_reformas = %s")
+            where_conditions.append("i.n_reformas <= %s")
             params.append(n_reformas)
 
         if possui_garagem is not None:
@@ -107,6 +109,8 @@ class ImóvelDatabase:
         #se não filtrou por comodidade, constrói a query normal
         if where_conditions:
             query += " WHERE " + " AND ".join(where_conditions)
+        
+        query += " GROUP BY i.matricula"
 
         return self.db.execute_select_all(query, tuple(params))
     

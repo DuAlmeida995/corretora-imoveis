@@ -42,7 +42,7 @@ def cadastra_pagamento(): #insere um pagamento referente a um contrato
     if not registro:
         return jsonify("Nao foi possivel criar pagamento."), 400
 
-    return jsonify("Pagamento inserido corretamente."), 200
+    return jsonify({"message": "Pagamento inserido corretamente."}), 200
 
 @pagamento_blueprint.route("/pagamento/status", methods=["GET"])
 @token_obrigatorio

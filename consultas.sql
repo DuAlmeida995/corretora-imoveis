@@ -45,7 +45,7 @@ VALUES ('99988877766', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7
 
 /*INSERT INTO tel_usuario(CPF, telefone) VALUES (%s, %s), (%s, %s);*/
 
-INSERT INTO tel_usuario(CPF, telefone) 
+INSERT INTO tel_usuario(CPF, telefone)
 VALUES ('99988877766', '11988887777'), ('99988877766', '11955554444');
 
 -- 7. Obtém o total de telefones cadastrados para um usuário específico. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
@@ -83,7 +83,7 @@ JOIN assina a ON u.CPF = a.CPF_adq
 JOIN contrato c ON a.codigo_c = c.codigo
 JOIN imovel i ON c.matricula_imovel = i.matricula
 WHERE u.CPF = %s
-GROUP BY u.CPF, i.tipo, i.finalidade, c.tipo 
+GROUP BY u.CPF, i.tipo, i.finalidade, c.tipo
 ORDER BY u.prenome, total_de_contratos DESC;*/
 
 SELECT u.prenome, u.sobrenome, i.tipo AS tipo_de_imovel, i.finalidade, c.tipo AS tipo_de_contrato, COUNT(*) AS total_de_contratos
@@ -92,7 +92,7 @@ JOIN assina a ON u.CPF = a.CPF_adq
 JOIN contrato c ON a.codigo_c = c.codigo
 JOIN imovel i ON c.matricula_imovel = i.matricula
 WHERE u.CPF = '99988877766'
-GROUP BY u.CPF, i.tipo, i.finalidade, c.tipo 
+GROUP BY u.CPF, i.tipo, i.finalidade, c.tipo
 ORDER BY u.prenome, total_de_contratos DESC;
 
 -- 11. Lista todos os imóveis de um proprietário e inclui informações do contrato associado (como status e data de fim), se houver.(A consulta SQL é apenas a primeira etapa. O código Python subsequente itera sobre os resultados para: verificar se contratos 'Ativos' já expiraram (comparando data_fim com a data atual), atualizar o status no banco se um contrato tiver expirado)
@@ -123,8 +123,8 @@ SELECT i.*, array_agg(DISTINCT img.imovel_image_url) AS imagens
 FROM imovel i
 LEFT JOIN comodidades_imovel c ON i.matricula = c.matricula
 LEFT JOIN imagem_imovel img ON i.matricula = img.matricula
-WHERE i.tipo = 'Apartamento' 
-  AND i.bairro = 'Tatuapé' 
+WHERE i.tipo = 'Apartamento'
+  AND i.bairro = 'Tatuapé'
   AND i.valor_venal >= 800000
 GROUP BY i.matricula;
 
@@ -148,14 +148,14 @@ HAVING COUNT(DISTINCT c.comodidade) = 2;
 
 -- 13. Obtém os status de um imóvel (o código em python confere se a data de fim de um contrato já passou. Se tiver, altera o status do contrato para finalizado e o status do imóvel para disponível). A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
 
-/*SELECT c.codigo, c.status, c.data_fim FROM imovel i 
-LEFT JOIN contrato c ON i.matricula = c.matricula_imovel 
-WHERE i.matricula = %s 
+/*SELECT c.codigo, c.status, c.data_fim FROM imovel i
+LEFT JOIN contrato c ON i.matricula = c.matricula_imovel
+WHERE i.matricula = %s
 ORDER BY c.codigo DESC;*/
 
-SELECT c.codigo, c.status, c.data_fim FROM imovel i 
-LEFT JOIN contrato c ON i.matricula = c.matricula_imovel 
-WHERE i.matricula = '1001001001001002' 
+SELECT c.codigo, c.status, c.data_fim FROM imovel i
+LEFT JOIN contrato c ON i.matricula = c.matricula_imovel
+WHERE i.matricula = '1001001001001002'
 ORDER BY c.codigo DESC;
 
 -- 14. Atualiza os dados cadastrais básicos (nome, email, imagem de perfil) de um usuário. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
@@ -165,9 +165,9 @@ SET prenome = %s, sobrenome = %s, email = %s, profile_image_url = %s
 WHERE CPF = %s;*/
 
 UPDATE usuario
-SET prenome = 'Ana Maria', 
-    sobrenome = 'Silva Souza', 
-    email = 'ana.nova@email.com', 
+SET prenome = 'Ana Maria',
+    sobrenome = 'Silva Souza',
+    email = 'ana.nova@email.com',
     profile_image_url = 'https://exemplo.com/fotos/ana_silva_v2.jpg'
 WHERE CPF = '12345678901';
 
@@ -177,7 +177,7 @@ WHERE CPF = '12345678901';
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);*/
 
 INSERT INTO imovel (matricula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, n_reformas, finalidade, logradouro, complemento, numero, CEP, cidade, CPF_prop, descricao, bairro)
-VALUES ('1001001001001011', 3, 950000.00, 180.0, 'Casa', false, true, 1, 'Residencial', 
+VALUES ('1001001001001011', 3, 950000.00, 180.0, 'Casa', false, true, 1, 'Residencial',
 'Rua Maria Amália Lopes de Azevedo', NULL, '3000', '02350001', 'São Paulo', '60590810211',
 'Casa espaçosa no Tremembé, 3 quartos, perto da serra.','Tremembé');
 
@@ -203,13 +203,13 @@ SET CPF_prop = '98765432109'
 WHERE matricula = '1001001001001011';
 
 -- 18. Adiciona uma ou mais comodidades a um imóvel. A consulta é construída dinamicamente para inserir múltiplas linhas de uma vez. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
-	
+
 	--Exemplo para 2 itens
-/*INSERT INTO comodidades_imovel(matricula, comodidade) 
+/*INSERT INTO comodidades_imovel(matricula, comodidade)
 VALUES (%s, %s), (%s, %s);*/
 
-INSERT INTO comodidades_imovel(matricula, comodidade) 
-VALUES ('1001001001001011', 'Churrasqueira'), 
+INSERT INTO comodidades_imovel(matricula, comodidade)
+VALUES ('1001001001001011', 'Churrasqueira'),
        ('1001001001001011', 'Quintal');
 
 -- 19. Remove uma ou mais comodidades de um imóvel específico. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
@@ -242,7 +242,7 @@ VALUES ('1001001001001011', 'http://localhost:5000/static/uploads/imoveis/100100
 WHERE matricula = %s AND imovel_image_url = %s;*/
 
 DELETE FROM imagem_imovel
-WHERE matricula = '1001001001001011' 
+WHERE matricula = '1001001001001011'
   AND imovel_image_url = 'http://localhost:5000/static/uploads/imoveis/1001001001001011_0.jpg';
 
 -- 23. Obtém contratos de aluguel ativos que estão perto de vencer (dentro de um intervalo de 30 dias a partir da data atual). A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
@@ -265,10 +265,10 @@ VALUES (31, 2500.00, 'Ativo', '2025-12-01', '2027-12-01', 'Aluguel', '1001001001
 
 -- 25. Registra a assinatura de um contrato por um adquirente, vinculando o CPF do cliente ao código do contrato. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
 
-/*INSERT INTO assina(CPF_adq, codigo_c) 
+/*INSERT INTO assina(CPF_adq, codigo_c)
 VALUES (%s, %s);*/
 
-INSERT INTO assina(CPF_adq, codigo_c) 
+INSERT INTO assina(CPF_adq, codigo_c)
 VALUES ('50170230455', 31);
 
 -- 26. Deleta um contrato do sistema. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
@@ -308,17 +308,17 @@ SELECT c.codigo,c.status, c.data_inicio, c.data_fim, c.valor, i.matricula, i.log
 
 -- 30. Obtém o histórico de valores negociados (seja de venda ou aluguel) de todos os contratos associados a um imóvel específico, ordenados do mais recente para o mais antigo. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
 
-/*SELECT codigo, matricula_imovel, valor FROM contrato 
-WHERE matricula_imovel = %s 
+/*SELECT codigo, matricula_imovel, valor FROM contrato
+WHERE matricula_imovel = %s
 ORDER BY codigo DESC;*/
 
-SELECT codigo, matricula_imovel, valor FROM contrato 
-WHERE matricula_imovel = '1001001001001002' 
+SELECT codigo, matricula_imovel, valor FROM contrato
+WHERE matricula_imovel = '1001001001001002'
 ORDER BY codigo DESC;
 
 -- 31. Gera um relatório dos imóveis ordenados pelo número de vezes que foram alugados (contagem de contratos do tipo 'Aluguel'), do mais popular para o menos popular.
 
-SELECT i.matricula, i.logradouro, i.numero, 
+SELECT i.matricula, i.logradouro, i.numero,
         COUNT(c.codigo) AS nr_de_vezes_alugado
         FROM contrato c JOIN imovel i ON c.matricula_imovel = i.matricula
         WHERE c.tipo='Aluguel'
@@ -327,8 +327,9 @@ SELECT i.matricula, i.logradouro, i.numero,
 
 -- 32. Devolve o histórico de proprietários e adquirentes (ou inquilinos) associados a um imóvel através de seus contratos. A consulta recupera o nome do proprietário no momento do contrato e, se houver, o nome da pessoa que assinou (comprou ou alugou). A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
 
-/*SELECT c.codigo, c.tipo, c.status, 
-prop.prenome AS proprietario_nome, prop.sobrenome AS proprietario_sobrenome, 
+
+/*SELECT c.codigo, c.tipo, c.status,
+prop.prenome AS proprietario_nome, prop.sobrenome AS proprietario_sobrenome,
 adq.prenome AS adquirente_nome, adq.sobrenome AS adquirente_sobrenome
 FROM contrato c
 JOIN usuario prop ON c.CPF_prop = prop.CPF
@@ -337,8 +338,8 @@ LEFT JOIN usuario adq ON a.CPF_adq = adq.CPF
 WHERE c.matricula_imovel = %s
 ORDER BY c.codigo DESC;*/
 
-SELECT c.codigo, c.tipo, c.status, 
-       prop.prenome AS proprietario_nome, prop.sobrenome AS proprietario_sobrenome, 
+SELECT c.codigo, c.tipo, c.status,
+       prop.prenome AS proprietario_nome, prop.sobrenome AS proprietario_sobrenome,
        adq.prenome AS adquirente_nome, adq.sobrenome AS adquirente_sobrenome
 FROM contrato c
 JOIN usuario prop ON c.CPF_prop = prop.CPF
@@ -407,16 +408,16 @@ ORDER BY p.data_vencimento DESC;
 
 -- 38. Busca os dados específicos de um corretor (Especialidade, CRECI, Região) e agrupa todos os seus telefones cadastrados em uma única string separada por vírgulas. A seguir apresentamos um exemplo de uso, substituindo os %s por valores.
 
-/* SELECT 
+/* SELECT
 c.especialidade, c.creci_codigo AS creci, c.regiao_atuacao,STRING_AGG(t.telefone, ',') AS telefone_contato
 FROM corretor c
 LEFT JOIN tel_usuario t ON c.CPF = t.CPF
 WHERE c.CPF = %s
 GROUP BY c.CPF, c.especialidade, c.creci_codigo, c.regiao_atuacao;*/
 
-SELECT 
-    c.especialidade, 
-    c.creci_codigo AS creci, 
+SELECT
+    c.especialidade,
+    c.creci_codigo AS creci,
     c.regiao_atuacao,
     STRING_AGG(t.telefone, ',') AS telefone_contato
 FROM corretor c
@@ -468,11 +469,11 @@ SET otp_code = EXCLUDED.otp_code, expires_at = EXCLUDED.expires_at;
 
 -- 44. Busca o código OTP atual e sua data de expiração para um determinado CPF. O código Python usa esses dados para verificar se o token fornecido pelo usuário está correto e dentro do prazo.
 
-/*SELECT otp_code, expires_at 
+/*SELECT otp_code, expires_at
 FROM otp_codes
 WHERE CPF = %s;*/
 
-SELECT otp_code, expires_at 
+SELECT otp_code, expires_at
 FROM otp_codes
 WHERE CPF = '12345678901';
 

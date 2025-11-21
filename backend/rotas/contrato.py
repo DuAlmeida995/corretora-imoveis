@@ -14,7 +14,6 @@ def contratos_prazo():  #obtém contratos perto de vencer (em até 30 dias)
 @token_obrigatorio
 def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina (liga o contrato ao adquirente)
     json = request.get_json()
-    código = json.get("codigo")
     valor = json.get("valor")
     status = json.get("status")
     data_início_str = json.get("data_inicio")
@@ -25,8 +24,10 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
     CPF_logado_corretor = request.cpf_usuario  #usar o cpf do token para maior segurança
     CPF_adq = json.get("CPF_adq")
 
-    if not all([código, valor, status, data_início_str, data_fim_str, tipo, matrícula_imóvel, CPF_prop, CPF_logado_corretor,CPF_adq]):
-        return jsonify("Todos os campos (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor) sao obrigatorios"), 400
+    db_service = ContratoDatabase()
+
+    if not all([valor, status, data_início_str, data_fim_str, tipo, matrícula_imóvel, CPF_prop, CPF_logado_corretor, CPF_adq]):
+        return jsonify({"error": "Todos os campos obrigatórios não foram preenchidos (exceto código)."}), 400
     
     try:
         data_início = datetime.strptime(data_início_str, '%Y-%m-%d').date()
@@ -34,8 +35,7 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
     except (ValueError, TypeError):
         return jsonify({"erro": "Formato de data invalido. Use YYYY-MM-DD"}), 400
 
-    registro=ContratoDatabase().insere_contrato(
-        código,
+    codigo_gerado = db_service.insere_contrato(
         valor,
         status,
         data_início,
@@ -45,39 +45,39 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
         CPF_prop,
         CPF_logado_corretor
     )
+    
+    if codigo_gerado:
+        registro2 = db_service.completa_adquirente(
+            CPF_adq,
+            codigo_gerado
+        )
 
-    registro2=ContratoDatabase().completa_adquirente(
-        CPF_adq,
-        código
-    )
-
-    if registro:
         if registro2:
-            return jsonify("Contrato inserido corretamente."), 200
+            return jsonify({
+                "message": "Contrato inserido corretamente.",
+                "codigo": codigo_gerado
+            }), 200
         else:
-            ContratoDatabase().deleta_contrato(código) #para garantir que o contrato não vai ficar sem preencher a tabela assina
-            return jsonify("Nao foi possivel criar contrato."), 400
+            ContratoDatabase().deleta_contrato(codigo_gerado) #para garantir que o contrato não vai ficar sem preencher a tabela assina
+            return jsonify({"error": "Erro ao vincular adquirente. Contrato desfeito."}),
 
-    return jsonify("Nao foi possivel criar contrato."), 400
+    return jsonify({"error": "Nao foi possivel criar contrato no banco."}), 400
 
 
 @contrato_blueprint.route("/contratos/deleta", methods=["DELETE"])
 @token_obrigatorio
 def deleta_contrato(): #deleta um contrato
-    json = request.get_json()
-    código = json.get("codigo")
+    ódigo = request.args.get("codigo")
 
     if not código:
-        return jsonify("O campo codigo e obrigatorio"), 400
+        return jsonify({"error": "O campo codigo e obrigatorio."}), 400
 
-    registro=ContratoDatabase().deleta_contrato(
-        código
-    )
+    registro = ContratoDatabase().deleta_contrato(código)
 
     if not registro:
-        return jsonify("Nao foi possivel deletar contrato."), 400
+        return jsonify({"error": "Nao foi possivel deletar contrato."}), 400
 
-    return jsonify("Contrato deletado corretamente."), 200
+    return jsonify({"message": "Contrato deletado corretamente."}), 200
 
 @contrato_blueprint.route("/contratos/alterar-status", methods=["PUT"])
 @token_obrigatorio

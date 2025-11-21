@@ -1,5 +1,6 @@
 from serviços.database.conector import DatabaseManager
 from datetime import date, datetime, timedelta
+import uuid
 
 class ContratoDatabase:
     def __init__(self, db_provider=None) -> None:
@@ -24,14 +25,20 @@ class ContratoDatabase:
         
         return self.db.execute_select_all(query, params)
     
-    def insere_contrato(self, codigo:int, valor:float, status:str,data_inicio:date, data_fim:date, tipo:str, matricula_imovel:str, CPF_prop:str, CPF_corretor:str): #insere um novo contrato
+    def insere_contrato(self, valor:float, status:str, data_inicio:date, data_fim:date, tipo:str, matricula_imovel:str, CPF_prop:str, CPF_corretor:str): 
         statement = """
             INSERT INTO contrato (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
+            VALUES (DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s) 
+            RETURNING codigo;
         """
-        params = (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor)
+        params = (valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor)
         
-        return self.db.execute_statement(statement, params)
+        # Executa a inserção
+        resultado = self.db.execute_select_one(statement, params)
+        
+        if resultado and 'codigo' in resultado:
+            return resultado['codigo']
+        return None
     
     def completa_adquirente(self, CPF_adq:str, codigo_c:int): #completa a tabela adquirente
        statement = """
@@ -69,9 +76,8 @@ class ContratoDatabase:
         return self.db.execute_select_all(statement, params)
 
     def get_alugueis_ativos(self): #obtém contratos de alguel ativos
-        # Esta consulta não tem input do usuário, então é segura como estava.
         statement=""" 
-        SELECT c.codigo,c.status, c.data_inicio, c.data_fim, c.valor, i.matricula, i.logradouro, i.numero
+        SELECT c.codigo,c.status, c.data_inicio, c.data_fim, c.valor, c.CPF_prop, c.CPF_corretor, i.matricula, i.logradouro, i.numero
         FROM contrato c
         JOIN imovel i ON c.matricula_imovel = i.matricula
         WHERE c.tipo='Aluguel' AND c.status='Ativo';

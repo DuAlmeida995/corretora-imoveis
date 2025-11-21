@@ -110,10 +110,27 @@ def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel
 
     return jsonify(registro),200
 
-@contrato_blueprint.route("/contratos/alugueis-ativos", methods=["GET"])
+@contrato_blueprint.route("/contratos", methods=["GET"])
 @token_obrigatorio
-def get_alugueis_ativos(): #obtém contratos de alguel ativos
-    return jsonify(ContratoDatabase().get_alugueis_ativos()),200
+def get_todos_contratos():
+    """Retorna a lista geral de contratos."""
+    try:
+        resultados = ContratoDatabase().get_todos_contratos()
+        return jsonify(resultados), 200
+    except Exception as e:
+        return jsonify({"error": f"Erro ao buscar contratos: {e}"}), 500
+
+@contrato_blueprint.route("/contratos/dashboard", methods=["GET"])
+@token_obrigatorio
+def get_contratos_dashboard():
+    try:
+        stats = ContratoDatabase().get_dashboard_stats()
+        # Garante que retorna 0 se for None
+        if not stats:
+            stats = {"ativos": 0, "atrasados": 0, "vencendo": 0}
+        return jsonify(stats), 200
+    except Exception as e:
+        return jsonify({"error": f"Erro ao buscar estatísticas: {e}"}), 500
 
 @contrato_blueprint.route("/contratos/obter-valores-imovel",  methods=["GET"])
 @token_obrigatorio

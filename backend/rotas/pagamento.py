@@ -81,9 +81,9 @@ def atualiza_status_pagamento():  #muda o status de um pagamento de um contrato
     )
 
     if not registro:
-        return jsonify("Nao foi possivel atualizar o status do pagamento."), 400
+        return jsonify({"error": "Nao foi possivel atualizar o status do pagamento."}), 400
 
-    return jsonify("Status do pagamento atualizado corretamente."), 200
+    return jsonify({"message": "Status do pagamento atualizado corretamente."}), 200
 
 @pagamento_blueprint.route("/pagamento/extrato-imovel", methods=["GET"])
 @token_obrigatorio

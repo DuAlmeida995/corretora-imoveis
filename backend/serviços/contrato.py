@@ -75,14 +75,35 @@ class ContratoDatabase:
         params = (matricula_imovel,)
         return self.db.execute_select_all(statement, params)
 
-    def get_alugueis_ativos(self): #obtém contratos de alguel ativos
-        statement=""" 
-        SELECT c.codigo,c.status, c.data_inicio, c.data_fim, c.valor, c.CPF_prop, c.CPF_corretor, i.matricula, i.logradouro, i.numero
+    def get_todos_contratos(self):
+        """
+        Retorna a lista completa de contratos (ou limitada aos últimos 50 para performance).
+        """
+        statement = """ 
+        SELECT 
+            c.codigo, c.status, c.tipo, c.data_inicio, c.data_fim, c.valor, 
+            c.CPF_prop, c.CPF_corretor, 
+            i.matricula, i.logradouro, i.numero
         FROM contrato c
         JOIN imovel i ON c.matricula_imovel = i.matricula
-        WHERE c.tipo='Aluguel' AND c.status='Ativo';
+        ORDER BY c.codigo DESC; 
         """
         return self.db.execute_select_all(statement)
+
+    def get_dashboard_stats(self):
+        """
+        Retorna apenas os contadores para o dashboard.
+        Usa SQL otimizado para calcular tudo em uma única consulta.
+        """
+        statement = """
+        SELECT
+            COUNT(*) FILTER (WHERE status = 'Ativo') as ativos,
+            COUNT(*) FILTER (WHERE status = 'Ativo' AND data_fim < CURRENT_DATE) as atrasados,
+            COUNT(*) FILTER (WHERE status = 'Ativo' AND data_fim BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '30 day')) as vencendo
+        FROM contrato;
+        """
+        # Nota: FILTER é sintaxe PostgreSQL moderna. Se der erro, use SUM(CASE WHEN...).
+        return self.db.execute_select_one(statement)
     
     def get_valores_contratos_imóvel(self, matricula_imovel:str): #obtém histórico de valores dos contratos de um imóvel
         statement="""

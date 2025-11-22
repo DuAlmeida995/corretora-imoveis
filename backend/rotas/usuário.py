@@ -95,7 +95,68 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
             return jsonify("Problema: nao foi possivel inserir o tipo, cadastro de usuario desfeito."), 400
         except Exception as e_deleção2:  
             return jsonify("Problema: nao foi possivel inserir o tipo de usuario e tambem nao foi possivel deletar o usuario."), 400
-  
+
+@usuário_blueprint.route("/usuario/cadastro-cliente", methods=["POST"])
+@token_obrigatorio
+def cadastra_cliente_pelo_corretor():
+    json = request.get_json()
+    
+    cpf = json.get("cpf")
+    prenome = json.get("prenome")
+    sobrenome = json.get("sobrenome")
+    data_nasc_str = json.get("data_nasc")
+    email = json.get("email")
+    tel_usuario = json.get("telefones")
+    
+    proprietario = json.get("proprietario", False)
+    adquirente = json.get("adquirente", False)
+    
+    pontuacao_credito = json.get("pontuacao_credito") 
+    
+    if not all([cpf, prenome, sobrenome, data_nasc_str, email, tel_usuario]):
+        return jsonify({"error": "Todos os campos (cpf, nome, nascimento, email, telefone) são obrigatórios."}), 400
+    
+    if not proprietario and not adquirente:
+        return jsonify({"error": "O cadastro deve ser classificado como Proprietário, Adquirente ou ambos."}), 400
+
+    if json.get("corretor") is True:
+        return jsonify({"error": "Esta rota é exclusiva para clientes. Para cadastrar corretores, use a rota de registro principal."}), 403
+
+    try:
+        data_nasc_obj = datetime.strptime(data_nasc_str, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return jsonify({"error": "Formato de data inválido. Use YYYY-MM-DD"}), 400
+    
+    db_service = UsuárioDatabase()
+
+    try:
+        db_service.insere_usuário(cpf, prenome, sobrenome, data_nasc_obj, email)
+    except Exception as e:
+        return jsonify({"error": f"Erro ao criar usuário (CPF pode já estar cadastrado): {str(e)}"}), 400
+    
+    try:
+        sucesso_tel = db_service.insere_lista_tel_usuário(cpf, tel_usuario)
+        if not sucesso_tel:
+             raise Exception("Falha na validação ou inserção dos telefones.")
+    except Exception as e:
+        db_service.deleta_usuário(cpf) # Rollback manual se falhar telefone
+        return jsonify({"error": f"Erro ao cadastrar telefones: {str(e)}"}), 400
+
+    try:
+        if proprietario:
+            db_service.insere_proprietário(cpf)
+            
+        if adquirente:
+            score = pontuacao_credito if pontuacao_credito else 0
+            db_service.insere_adquirente(cpf, score)
+            
+        return jsonify({
+            "message": "Cliente cadastrado com sucesso.",
+        }), 200
+        
+    except Exception as e:
+        db_service.deleta_usuário(cpf)
+        return jsonify({"error": f"Erro ao definir tipo do cliente: {str(e)}"}), 500
 
 @usuário_blueprint.route("/usuario/telefones", methods=["POST"])
 @token_obrigatorio

@@ -113,13 +113,20 @@ def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel
 @contrato_blueprint.route("/contratos", methods=["GET"])
 @token_obrigatorio
 def get_todos_contratos():
-    """Retorna a lista geral de contratos."""
+    """
+    Retorna a lista geral de contratos.
+    Aceita query param '?limit=10' para pegar apenas os recentes.
+    """
+    # Obtém o limite da URL, converte para int. Padrão é None (todos) ou 50 se preferir segurança.
+    limit = request.args.get("limit", default=None, type=int)
+
     try:
-        resultados = ContratoDatabase().get_todos_contratos()
+        # Passa o limite para o banco de dados
+        resultados = ContratoDatabase().get_todos_contratos(limit=limit)
         return jsonify(resultados), 200
     except Exception as e:
         return jsonify({"error": f"Erro ao buscar contratos: {e}"}), 500
-
+        
 @contrato_blueprint.route("/contratos/dashboard", methods=["GET"])
 @token_obrigatorio
 def get_contratos_dashboard():

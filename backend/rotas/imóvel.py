@@ -56,6 +56,56 @@ def verifica_status_imóveis(): #obtém os status de um imóvel (se a data de fi
         matrícula
     )), 200
 
+@imovel_blueprint.route("/imoveis/update", methods=["PUT"])
+@token_obrigatorio
+def atualiza_imovel():
+    json = request.get_json()
+    matrícula = json.get("matricula")
+    
+    if not matrícula:
+        return jsonify({"error": "Matrícula é obrigatória para atualização."}), 400
+
+    cpf_prop = json.get("cpf_prop") 
+    logradouro = json.get("logradouro")
+    complemento = json.get("complemento")
+    número = json.get("numero")
+    CEP = json.get("cep")
+    cidade = json.get("cidade")
+    metragem = json.get("metragem")
+    finalidade = json.get("finalidade")
+    tipo = json.get("tipo")
+    n_quartos = json.get("n_quartos")
+    n_reformas = json.get("n_reformas")
+    possui_garagem = json.get("possui_garagem")
+    mobiliado = json.get("mobiliado")
+    valor_venal = json.get("valor_venal")
+    descricao = json.get("descricao")
+    bairro = json.get("bairro")
+
+    sucesso = ImóvelDatabase().atualiza_imóvel(
+        matrícula,
+        n_quartos,
+        valor_venal,
+        metragem,
+        tipo,
+        mobiliado,
+        possui_garagem,
+        n_reformas,
+        finalidade,
+        logradouro,
+        complemento,
+        número, 
+        CEP,
+        cidade, 
+        descricao,
+        bairro
+    )
+
+    if not sucesso:
+        return jsonify({"error": "Não foi possível atualizar o imóvel."}), 400
+
+    return jsonify({"message": "Imóvel atualizado com sucesso."}), 200
+    
 @imovel_blueprint.route("/imoveis/cadastro", methods=["POST"])
 @token_obrigatorio
 def cadastrar_imóvel(): #cadastra um novo imóvel

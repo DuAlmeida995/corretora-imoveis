@@ -75,9 +75,10 @@ class ContratoDatabase:
         params = (matricula_imovel,)
         return self.db.execute_select_all(statement, params)
 
-    def get_todos_contratos(self):
+    def get_todos_contratos(self, limit=None):
         """
-        Retorna a lista completa de contratos (ou limitada aos últimos 50 para performance).
+        Retorna a lista de contratos ordenados do mais recente para o mais antigo.
+        Permite limitar a quantidade de resultados.
         """
         statement = """ 
         SELECT 
@@ -86,9 +87,15 @@ class ContratoDatabase:
             i.matricula, i.logradouro, i.numero
         FROM contrato c
         JOIN imovel i ON c.matricula_imovel = i.matricula
-        ORDER BY c.codigo DESC; 
+        ORDER BY c.codigo DESC
         """
-        return self.db.execute_select_all(statement)
+        
+        params = ()
+        if limit:
+            statement += " LIMIT %s"
+            params = (limit,)
+            
+        return self.db.execute_select_all(statement, params)
 
     def get_dashboard_stats(self):
         """

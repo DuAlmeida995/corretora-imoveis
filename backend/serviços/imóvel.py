@@ -114,6 +114,29 @@ class ImóvelDatabase:
 
         return self.db.execute_select_all(query, tuple(params))
     
+    def atualiza_imóvel(self, matricula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, n_reformas, finalidade, logradouro, complemento, numero, cep, cidade, descricao, bairro):
+        statement = """
+            UPDATE imovel
+            SET n_quartos = %s, 
+                valor_venal = %s, 
+                metragem = %s, 
+                tipo = %s, 
+                mobiliado = %s, 
+                possui_garagem = %s, 
+                n_reformas = %s, 
+                finalidade = %s, 
+                logradouro = %s, 
+                complemento = %s, 
+                numero = %s, 
+                cep = %s, 
+                cidade = %s, 
+                descricao = %s, 
+                bairro = %s
+            WHERE matricula = %s;
+        """
+        params = (n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, n_reformas, finalidade, logradouro, complemento, numero, cep, cidade, descricao, bairro, matricula)
+        return self.db.execute_statement(statement, params)
+        
     def get_status_imovel(self, matricula: str): #obtém os status de um imóvel (se a data de fim de um contrato tiver passado, altera o status do contrato para finalizado e o status do imóvel para disponível)
         statement = """
             SELECT c.codigo, c.status, c.data_fim FROM imovel i 

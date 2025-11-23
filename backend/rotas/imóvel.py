@@ -7,8 +7,9 @@ from werkzeug.utils import secure_filename
 
 imovel_blueprint = Blueprint("imovel", __name__)
 
+#busca imoveis com filtros avancados, todos os parametros sao opcionais
 @imovel_blueprint.route("/imoveis/filtro", methods=["GET"])
-def filtra_imóveis(): #filtra imóveis de acordo com uma série de características (vc ecolhe quantas e quais)
+def filtra_imóveis(): 
     valor_venal_min = request.args.get("valor_venal_min", type=float)
     valor_venal_max = request.args.get("valor_venal_max", type=float)
     logradouro = request.args.get("logradouro", "")
@@ -49,13 +50,15 @@ def filtra_imóveis(): #filtra imóveis de acordo com uma série de característ
         comodidade
     )), 200
 
+#verifica e atualiza o status do imovel baseado nos contratos ativos
 @imovel_blueprint.route("/imoveis/status", methods=["GET"])
-def verifica_status_imóveis(): #obtém os status de um imóvel (se a data de fim de um contrato tiver passado, altera o status do contrato para finalizado e o status do imóvel para disponível)
+def verifica_status_imóveis():  
     matrícula = request.args.get("matricula", "")
     return jsonify(ImóvelDatabase().get_status_imovel(
         matrícula
     )), 200
 
+#atualiza as informacoes basicas de um imovel existente
 @imovel_blueprint.route("/imoveis/update", methods=["PUT"])
 @token_obrigatorio
 def atualiza_imovel():
@@ -105,10 +108,11 @@ def atualiza_imovel():
         return jsonify({"error": "Não foi possível atualizar o imóvel."}), 400
 
     return jsonify({"message": "Imóvel atualizado com sucesso."}), 200
-    
+
+#cadastra um novo imovel no sistema junto com suas comodidades
 @imovel_blueprint.route("/imoveis/cadastro", methods=["POST"])
 @token_obrigatorio
-def cadastrar_imóvel(): #cadastra um novo imóvel
+def cadastrar_imóvel(): 
     json = request.get_json()
     cpf_prop = json.get("cpf_prop")
     logradouro = json.get("logradouro")
@@ -165,27 +169,24 @@ def cadastrar_imóvel(): #cadastra um novo imóvel
 
     return jsonify({"message": "Imovel e comodidades cadastrados com sucesso."}), 200
 
-# Configurações
+#configuracoes para upload de fotos de imoveis
 UPLOAD_FOLDER_IMOVEIS = os.path.join(os.getcwd(), 'static', 'uploads', 'imoveis')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_FILE_SIZE = 5 * 1024 * 1024  
 
+#verifica se o arquivo eh permitido
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+#faz upload de multiplas fotos para um imovel especifico
 @imovel_blueprint.route("/imoveis/upload_fotos", methods=["POST"])
 @token_obrigatorio
 def upload_fotos_imovel():
-    # Diferente do usuário (que pegamos pelo token), aqui o imóvel não está "logado".
-    # O frontend DEVE mandar a matrícula para sabermos de quem são as fotos.
     matrícula = request.form.get("matricula")
-
     if not matrícula:
         return jsonify({"error": "Matrícula é obrigatória para vincular as fotos."}), 400
 
-    # Verifica se enviaram arquivos na chave 'fotos'
-    # getlist pega VÁRIOS arquivos de uma vez
     files = request.files.getlist('fotos') 
 
     if not files or files[0].filename == '':
@@ -195,7 +196,6 @@ def upload_fotos_imovel():
     erros = []
     db = ImóvelDatabase()
 
-    # Cria pasta se não existir
     if not os.path.exists(UPLOAD_FOLDER_IMOVEIS):
         os.makedirs(UPLOAD_FOLDER_IMOVEIS)
 
@@ -235,6 +235,7 @@ def upload_fotos_imovel():
         "erros": erros
     }), 200
 
+#remove uma imagem especifica de um imovel
 @imovel_blueprint.route("/imoveis/imagem", methods=["DELETE"])
 @token_obrigatorio
 def deletar_imagem_imovel():
@@ -253,12 +254,7 @@ def deletar_imagem_imovel():
         return jsonify({"error": "Imagem não encontrada no banco ou erro ao deletar registro."}), 404
 
     try:
-        # A URL é algo como: http://localhost:5000/static/uploads/imoveis/1234_0.jpg
-        # Precisamos extrair apenas o nome do arquivo: "1234_0.jpg"
         filename = image_url.split('/')[-1]
-        
-        # Monta o caminho absoluto do arquivo no servidor
-        # current_app.root_path aponta para a pasta raiz da sua aplicação Flask
         file_path = os.path.join(os.getcwd(), 'static', 'uploads', 'imoveis', filename)
 
         if os.path.exists(file_path):
@@ -269,8 +265,6 @@ def deletar_imagem_imovel():
 
     except Exception as e:
         print(f"Erro ao apagar arquivo físico: {e}")
-        # Não retornamos erro 500 aqui porque o registro no banco JÁ foi apagado,
-        # então para o usuário a operação foi um sucesso (a imagem sumiu do sistema).
         msg_arquivo = f"Erro ao apagar arquivo físico: {str(e)}"
 
     return jsonify({
@@ -278,9 +272,10 @@ def deletar_imagem_imovel():
         "details": msg_arquivo
     }), 200
 
+#altera caracteristicas especificas de um imovel, sem mudar endereco
 @imovel_blueprint.route("/imoveis/alteracao", methods=["PUT"])
 @token_obrigatorio
-def alterar_imóvel(): #altera alguma carcterística de um imóvel (as comodidades são tratadas em método separado)
+def alterar_imóvel():
     json = request.get_json()
     matrícula = json.get("matricula")
     n_quartos = json.get("n_quartos")
@@ -314,9 +309,10 @@ def alterar_imóvel(): #altera alguma carcterística de um imóvel (as comodidad
 
     return jsonify("Imovel alterado com sucesso."), 200
 
+#transfere a propriedade de um imovel para outro proprietario
 @imovel_blueprint.route("/imoveis/alteracao/proprietario", methods=["PUT"])
 @token_obrigatorio
-def alterar_proprietario_imóvel(): #altera o proprietário de um imóvel
+def alterar_proprietario_imóvel(): 
     json = request.get_json()
     matrícula = json.get("matricula")
     cpf_prop = json.get("cpf_novo_prop")
@@ -334,12 +330,13 @@ def alterar_proprietario_imóvel(): #altera o proprietário de um imóvel
 
     return jsonify("Proprietario do imovel alterado com sucesso."), 200
 
+#adiciona novas comodidades a um imovel existente
 @imovel_blueprint.route("/imoveis/comodidades", methods=["POST"])
 @token_obrigatorio
-def adiciona_comodidades_imóvel(): #adiciona comodidades a um imóvel
+def adiciona_comodidades_imóvel(): 
     json = request.get_json()
     matrícula = json.get("matricula")
-    comodidades = json.get("comodidades")  # aqui você passa uma lista separada por vírgula
+    comodidades = json.get("comodidades") 
 
     if not all([matrícula, comodidades]):
         return jsonify("Matricula e comodidades sao campos obrigatorios"), 400
@@ -354,9 +351,10 @@ def adiciona_comodidades_imóvel(): #adiciona comodidades a um imóvel
 
     return jsonify("Comodidades adicionadas com sucesso."), 200
 
+#remove comodidades especificas de um imovel
 @imovel_blueprint.route("/imoveis/comodidades", methods=["DELETE"])
 @token_obrigatorio
-def remove_comodidades_imóvel(): #remove as comodiades de um imóvel (através desse e do adicionar que alteramos as comodidades de um imóvel)
+def remove_comodidades_imóvel(): 
     json = request.get_json()
     matrícula = json.get("matricula")
     comodidades = json.get("comodidades")  
@@ -374,9 +372,10 @@ def remove_comodidades_imóvel(): #remove as comodiades de um imóvel (através 
 
     return jsonify("Comodidades removidas com sucesso."), 200
 
+#remove completamente um imovel do sistema
 @imovel_blueprint.route("/imoveis/deleta", methods=["DELETE"])
 @token_obrigatorio
-def deleta_imóvel(): #deleta um imóvel
+def deleta_imóvel(): 
     json = request.get_json()
     matrícula = json.get("matricula")
 

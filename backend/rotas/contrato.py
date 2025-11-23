@@ -5,14 +5,16 @@ from utils.token_middleware import token_obrigatorio
 
 contrato_blueprint = Blueprint("contrato", __name__)
 
+#busca contratos que estao perto de vencer (proximos 30 dias)
 @contrato_blueprint.route("/contratos/prazo", methods=["GET"])
 @token_obrigatorio
-def contratos_prazo():  #obtém contratos perto de vencer (em até 30 dias)
+def contratos_prazo(): 
     return jsonify(ContratoDatabase().get_prazo_contrato()), 200
 
+##cria um novo contrato e vincula automaticamente com o adquirente
 @contrato_blueprint.route("/contratos/cadastro", methods=["POST"])
 @token_obrigatorio
-def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina (liga o contrato ao adquirente)
+def cadastra_contrato(): 
     json = request.get_json()
     valor = json.get("valor")
     status = json.get("status")
@@ -64,9 +66,10 @@ def cadastra_contrato(): #insere um novo contrato e já preenche a tabela assina
     return jsonify({"error": "Nao foi possivel criar contrato no banco."}), 400
 
 
+#remove um contrato do sistema
 @contrato_blueprint.route("/contratos/deleta", methods=["DELETE"])
 @token_obrigatorio
-def deleta_contrato(): #deleta um contrato
+def deleta_contrato():
     código = request.args.get("codigo")
 
     if not código:
@@ -79,9 +82,11 @@ def deleta_contrato(): #deleta um contrato
 
     return jsonify({"message": "Contrato deletado corretamente."}), 200
 
+
+#atualiza o status de um contrato (exemplo: ativo, cancelado, finalizado)
 @contrato_blueprint.route("/contratos/alterar-status", methods=["PUT"])
 @token_obrigatorio
-def alterar_status_contrato(): #altera status de um contrato
+def alterar_status_contrato():
     json = request.get_json()
     código = json.get("codigo")
     status = json.get("status")
@@ -99,9 +104,10 @@ def alterar_status_contrato(): #altera status de um contrato
 
     return jsonify("Status do contrato alterado corretamente."), 200
 
+#busca os periodos de aluguel de um imovel especifico para evitar sobreposicao
 @contrato_blueprint.route("/contratos/obter-periodo-aluguel",  methods=["GET"])
 @token_obrigatorio
-def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel de um imóvel
+def get_periodo_alugueis_imovel(): 
     matrícula = request.args.get("matricula", "")
 
     registro=ContratoDatabase().get_período_aluguéis_imóvel(
@@ -110,6 +116,7 @@ def get_periodo_alugueis_imovel(): #obtém os períodos dos contratos de aluguel
 
     return jsonify(registro),200
 
+#lista todos os contratos do sistema, com opcao de limitar quantidade
 @contrato_blueprint.route("/contratos", methods=["GET"])
 @token_obrigatorio
 def get_todos_contratos():
@@ -117,7 +124,6 @@ def get_todos_contratos():
     Retorna a lista geral de contratos.
     Aceita query param '?limit=10' para pegar apenas os recentes.
     """
-    # Obtém o limite da URL, converte para int. Padrão é None (todos) ou 50 se preferir segurança.
     limit = request.args.get("limit", default=None, type=int)
 
     try:
@@ -125,7 +131,8 @@ def get_todos_contratos():
         return jsonify(resultados), 200
     except Exception as e:
         return jsonify({"error": f"Erro ao buscar contratos: {e}"}), 500
-        
+
+#busca estatisticas para dashboard: contratos ativos, atrasados e proximos do vencimento
 @contrato_blueprint.route("/contratos/dashboard", methods=["GET"])
 @token_obrigatorio
 def get_contratos_dashboard():
@@ -137,21 +144,24 @@ def get_contratos_dashboard():
     except Exception as e:
         return jsonify({"error": f"Erro ao buscar estatísticas: {e}"}), 500
 
+#obtem o historico de valores dos contratos de um imovel especifico
 @contrato_blueprint.route("/contratos/obter-valores-imovel",  methods=["GET"])
 @token_obrigatorio
-def get_valores_contrato_imóvel(): #obtém histórico de valores dos contratos de um imóvel
+def get_valores_contrato_imóvel(): 
     return jsonify(ContratoDatabase().get_valores_contratos_imóvel(
         matrícula_imóvel = request.args.get("matricula", "")
     )),200
 
+#lista os imoveis mais alugados no sistema (ranking)
 @contrato_blueprint.route("/contratos/obter-mais-alugados",  methods=["GET"])
 @token_obrigatorio
-def get_mais_alugados(): #obtém os imóveis mais alugados
+def get_mais_alugados(): 
     return jsonify(ContratoDatabase().get_mais_alugados()),200
 
+#busca o historico de proprietarios e adquirentes de um imovel atraves dos contratos
 @contrato_blueprint.route("/contratos/obter-pessoas-imovel",  methods=["GET"])
 @token_obrigatorio
-def get_histórico_pessoas_imóvel(): #devolve o histórico de proprietários e adquirentes de um imóvel por contrato
+def get_histórico_pessoas_imóvel(): 
     matrícula = request.args.get("matricula", "")
     return jsonify(ContratoDatabase().get_histórico_pessoas_imóvel(
         matrícula

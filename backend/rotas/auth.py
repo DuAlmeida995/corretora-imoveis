@@ -5,6 +5,7 @@ from serviços.email_service import EmailService
 
 auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 
+#faz o login do usuario no sistema, verifica CPF, senha, e retorna tokens de acesso
 @auth_blueprint.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -34,12 +35,12 @@ def login():
         usuario['dataNascimento'] = str(data_nasc) 
         del usuario['data_nasc'] 
     return jsonify({
-        "user": usuario, #contem prenome, sobrenome, email, cpf, etc.
+        "user": usuario,
         "access_token": access_token,
         "refresh_token": refresh_token
     }), 200
 
-
+#renova os tokens de acesso usando o refresh token quando o access token expira
 @auth_blueprint.route("/refresh", methods=["POST"])
 def refresh_token():
     data = request.get_json()
@@ -88,7 +89,7 @@ def register():
     except Exception as e:
         return jsonify({"error": f"Erro ao processar registro: {e}"}), 500
 
-
+#cria uma nova conta de usuario no sistema, reutiliza a lógica de criacao de usuario
 @auth_blueprint.route("/request-otp", methods=["POST"])
 def request_otp():
     """ Envia um código OTP para o email associado ao CPF. """
@@ -123,6 +124,7 @@ def request_otp():
         print(f"Erro ao enviar email/salvar OTP: {e}")
         return jsonify({"error": "Erro de servidor ao processar a solicitação de OTP."}), 500
 
+#envia um codigo de verificacao por email para o usuario que esqueceu a senha
 @auth_blueprint.route("/verify-otp", methods=["POST"])
 def verify_otp():
     """ Verifica o código OTP recebido pelo usuário. """
@@ -144,6 +146,7 @@ def verify_otp():
     else:
         return jsonify({"error": "Código OTP inválido ou expirado."}), 401
 
+#verifica se o codigo OTP que o usuario recebeu esta correto e valido
 @auth_blueprint.route("/reset-password", methods=["POST"])
 def reset_password():
     """ Redefinição final da senha após a verificação do OTP. """

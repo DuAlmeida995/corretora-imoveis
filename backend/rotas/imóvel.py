@@ -7,9 +7,9 @@ from werkzeug.utils import secure_filename
 
 imovel_blueprint = Blueprint("imovel", __name__)
 
-#busca imoveis com filtros avancados, todos os parametros sao opcionais
 @imovel_blueprint.route("/imoveis/filtro", methods=["GET"])
 def filtra_imóveis(): 
+    """Busca imóveis com filtros avançados, todos os paramêtros são opcionais"""
     valor_venal_min = request.args.get("valor_venal_min", type=float)
     valor_venal_max = request.args.get("valor_venal_max", type=float)
     logradouro = request.args.get("logradouro", "")
@@ -50,18 +50,18 @@ def filtra_imóveis():
         comodidade
     )), 200
 
-#verifica e atualiza o status do imovel baseado nos contratos ativos
 @imovel_blueprint.route("/imoveis/status", methods=["GET"])
-def verifica_status_imóveis():  
+def verifica_status_imóveis():
+    '''Verifica e atualiza o status do imóvel baseado nos contratos ativos'''  
     matrícula = request.args.get("matricula", "")
     return jsonify(ImóvelDatabase().get_status_imovel(
         matrícula
     )), 200
 
-#atualiza as informacoes basicas de um imovel existente
 @imovel_blueprint.route("/imoveis/update", methods=["PUT"])
 @token_obrigatorio
 def atualiza_imovel():
+    '''Atualiza as informações básicas de um imóvel existente'''
     json = request.get_json()
     matrícula = json.get("matricula")
     
@@ -109,10 +109,10 @@ def atualiza_imovel():
 
     return jsonify({"message": "Imóvel atualizado com sucesso."}), 200
 
-#cadastra um novo imovel no sistema junto com suas comodidades
 @imovel_blueprint.route("/imoveis/cadastro", methods=["POST"])
 @token_obrigatorio
 def cadastrar_imóvel(): 
+    '''Cadastra um novo imóvel no sistema junto com suas comodidades'''
     json = request.get_json()
     cpf_prop = json.get("cpf_prop")
     logradouro = json.get("logradouro")
@@ -174,15 +174,15 @@ UPLOAD_FOLDER_IMOVEIS = os.path.join(os.getcwd(), 'static', 'uploads', 'imoveis'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  
 
-#verifica se o arquivo eh permitido
 def allowed_file(filename):
+    '''Verifica se o arquivo tem uma extensão permitida'''
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-#faz upload de multiplas fotos para um imovel especifico
 @imovel_blueprint.route("/imoveis/upload_fotos", methods=["POST"])
 @token_obrigatorio
 def upload_fotos_imovel():
+    '''Faz upload de múltiplas fotos para um imóvel específico'''
     matrícula = request.form.get("matricula")
     if not matrícula:
         return jsonify({"error": "Matrícula é obrigatória para vincular as fotos."}), 400
@@ -235,10 +235,10 @@ def upload_fotos_imovel():
         "erros": erros
     }), 200
 
-#remove uma imagem especifica de um imovel
 @imovel_blueprint.route("/imoveis/imagem", methods=["DELETE"])
 @token_obrigatorio
 def deletar_imagem_imovel():
+    '''Remove uma imagem específica de um imóvel tanto do banco quanto do sistema de arquivos'''
     data = request.get_json()
     matricula = data.get("matricula")
     image_url = data.get("image_url")
@@ -272,10 +272,10 @@ def deletar_imagem_imovel():
         "details": msg_arquivo
     }), 200
 
-#altera caracteristicas especificas de um imovel, sem mudar endereco
 @imovel_blueprint.route("/imoveis/alteracao", methods=["PUT"])
 @token_obrigatorio
 def alterar_imóvel():
+    '''Altera características específicas de um imóvel, sem mudar endereço'''
     json = request.get_json()
     matrícula = json.get("matricula")
     n_quartos = json.get("n_quartos")
@@ -309,10 +309,10 @@ def alterar_imóvel():
 
     return jsonify("Imovel alterado com sucesso."), 200
 
-#transfere a propriedade de um imovel para outro proprietario
 @imovel_blueprint.route("/imoveis/alteracao/proprietario", methods=["PUT"])
 @token_obrigatorio
-def alterar_proprietario_imóvel(): 
+def alterar_proprietario_imóvel():
+    '''Altera o proprietário de um imóvel existente''' 
     json = request.get_json()
     matrícula = json.get("matricula")
     cpf_prop = json.get("cpf_novo_prop")
@@ -330,10 +330,10 @@ def alterar_proprietario_imóvel():
 
     return jsonify("Proprietario do imovel alterado com sucesso."), 200
 
-#adiciona novas comodidades a um imovel existente
 @imovel_blueprint.route("/imoveis/comodidades", methods=["POST"])
 @token_obrigatorio
-def adiciona_comodidades_imóvel(): 
+def adiciona_comodidades_imóvel():
+    '''Adiciona novas comodidades a um imóvel existente''' 
     json = request.get_json()
     matrícula = json.get("matricula")
     comodidades = json.get("comodidades") 
@@ -351,10 +351,10 @@ def adiciona_comodidades_imóvel():
 
     return jsonify("Comodidades adicionadas com sucesso."), 200
 
-#remove comodidades especificas de um imovel
 @imovel_blueprint.route("/imoveis/comodidades", methods=["DELETE"])
 @token_obrigatorio
-def remove_comodidades_imóvel(): 
+def remove_comodidades_imóvel():
+    '''Remove comodidades específicas de um imóvel existente''' 
     json = request.get_json()
     matrícula = json.get("matricula")
     comodidades = json.get("comodidades")  
@@ -372,10 +372,10 @@ def remove_comodidades_imóvel():
 
     return jsonify("Comodidades removidas com sucesso."), 200
 
-#remove completamente um imovel do sistema
 @imovel_blueprint.route("/imoveis/deleta", methods=["DELETE"])
 @token_obrigatorio
 def deleta_imóvel(): 
+    '''Remove completamente um imóvel do sistema'''
     json = request.get_json()
     matrícula = json.get("matricula")
 

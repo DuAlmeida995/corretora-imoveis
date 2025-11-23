@@ -3,13 +3,16 @@ from serviços.database.conector import DatabaseManager
 from datetime import date, datetime
 
 class UsuárioDatabase:
+    '''Classe para operações de banco de dados relacionadas a usuários.'''
     def __init__(self, db_provider=None) -> None:
+        '''Inicializa a conexão com o banco de dados'''
         if db_provider is None:
             self.db = DatabaseManager()
         else:
             self.db = db_provider
 
-    def insere_usuário(self, cpf: str, prenome: str, sobrenome: str, data_nasc:date, email:str): #cadastra um usuário (sem ainda colocar de qual/quais tipos ele é)
+    def insere_usuário(self, cpf: str, prenome: str, sobrenome: str, data_nasc:date, email:str): 
+        '''Cadastra um novo usuário na tabela usuário'''
         statement = """
             INSERT INTO usuario (CPF, prenome, sobrenome, data_nasc, email)
             VALUES (%s, %s, %s, %s, %s);
@@ -17,7 +20,8 @@ class UsuárioDatabase:
         params = (cpf, prenome, sobrenome, data_nasc, email)
         return self.db.execute_statement(statement, params)
 
-    def insere_adquirente(self, cpf: str, pontuacao_credito: int): #cadastra um usuário como adquirente
+    def insere_adquirente(self, cpf: str, pontuacao_credito: int): 
+        '''Cadastra um usuário como adquirente'''
         statement = """
             INSERT INTO adquirente (CPF,pontuacao_credito)
             VALUES (%s, %s);
@@ -25,14 +29,16 @@ class UsuárioDatabase:
         params = (cpf, pontuacao_credito)
         return self.db.execute_statement(statement, params)
     
-    def insere_proprietário(self, cpf: str): #cadastra um usuário como proprietário
+    def insere_proprietário(self, cpf: str):
+        '''Cadastra um usuário como proprietário'''
         statement = """
             INSERT INTO proprietario (CPF)
             VALUES (%s);
         """
         return self.db.execute_statement(statement, (cpf,))
     
-    def insere_corretor(self, cpf: str, especialidade:str, creci:str, regiao_atuacao:str): #cadastra um usuário como corretor
+    def insere_corretor(self, cpf: str, especialidade:str, creci:str, regiao_atuacao:str): 
+        '''Cadastra um usuário como corretor'''
         statement = """
             INSERT INTO corretor (CPF, especialidade, creci_codigo, regiao_atuacao)
             VALUES (%s, %s, %s, %s);
@@ -42,7 +48,6 @@ class UsuárioDatabase:
     
     def insere_login(self, cpf: str, hash_senha: str):
         """ Insere a senha com hash na tabela login (de forma segura). """
-        # Este método já estava correto.
         statement = """
             INSERT INTO login (CPF, senha)
             VALUES (%s, %s);
@@ -54,9 +59,10 @@ class UsuárioDatabase:
             print(f"Erro ao inserir login: {e}")
             raise e
     
-    def insere_lista_tel_usuário(self, cpf: str, tel_usuario: str): #insere os telefones de um usuário (aqui vc passa uma lista separada por vírgula)
+    def insere_lista_tel_usuário(self, cpf: str, tel_usuario: str): 
+        '''Insere uma lista de telefones para um usuário, garantindo o limite máximo de 3 telefones'''
         
-        tel_list_limpa = [tel.strip() for tel in tel_usuario.split(',') if tel.strip()] #para limpar a lista e não quebrar a consulta
+        tel_list_limpa = [tel.strip() for tel in tel_usuario.split(',') if tel.strip()] 
         if not tel_list_limpa:
             return True 
 
@@ -76,7 +82,8 @@ class UsuárioDatabase:
         """
         return self.db.execute_statement(statement, tuple(params))
     
-    def get_total_telefones_por_cpf(self, cpf: str) -> int: #obtém o total de telefones cadastrados para um usuário específico
+    def get_total_telefones_por_cpf(self, cpf: str) -> int: 
+        '''Retorna o total de telefones associados a um CPF'''
         statement = """
             SELECT COUNT(*) AS total
             FROM tel_usuario
@@ -89,8 +96,9 @@ class UsuárioDatabase:
         
         return 0
 
-    def deleta_tel_usuário(self, cpf: str, tel_usuario: str): #remove os telefones de um usuário (aqui vc passa uma lista separada por vírgula)
-        tel_list_limpa = [tel.strip() for tel in tel_usuario.split(',') if tel.strip()] #para limpar a lista e não quebrar a consulta
+    def deleta_tel_usuário(self, cpf: str, tel_usuario: str): 
+        '''Deleta telefones específicos de um usuário'''
+        tel_list_limpa = [tel.strip() for tel in tel_usuario.split(',') if tel.strip()] 
         if not tel_list_limpa:
             return True 
         
@@ -108,14 +116,16 @@ class UsuárioDatabase:
 
         return self.db.execute_statement(statement, params)
     
-    def deleta_usuário(self, cpf: str): #deleta um usuário
+    def deleta_usuário(self, cpf: str):
+        '''Deleta um usuário pelo CPF'''
         statement = """
             DELETE FROM usuario
             WHERE CPF = %s;
         """
         return self.db.execute_statement(statement, (cpf,))
 
-    def get_perfil_imóvel_adquirente(self, cpf:str): #obtém o perfil de imóveis de um adquirente
+    def get_perfil_imóvel_adquirente(self, cpf:str): 
+        '''Obtém o perfil de imóveis de um adquirente'''
         statement="""
         SELECT u.prenome, u.sobrenome, i.tipo AS tipo_de_imovel, i.finalidade, c.tipo AS tipo_de_contrato, COUNT(*) AS total_de_contratos
         FROM usuario u
@@ -128,7 +138,8 @@ class UsuárioDatabase:
         """
         return self.db.execute_select_all(statement, (cpf,))
 
-    def get_info_imóvel_proprietário(self, CPF_prop:str): #obtém os imóveis de um proprietário, fornecendo status sobre eles
+    def get_info_imóvel_proprietário(self, CPF_prop:str): 
+        '''Obtém os imóveis de um proprietário, fornecendo status sobre eles'''
         statement="""
         SELECT i.matricula, i.logradouro, i.numero, c.codigo, c.status, c.valor, c.data_fim
         FROM imovel i

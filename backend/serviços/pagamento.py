@@ -2,13 +2,16 @@ from serviços.database.conector import DatabaseManager
 from datetime import date, datetime
 
 class PagamentoDatabase:
+    '''Classe para operações de banco de dados relacionadas a pagamentos.'''
     def __init__(self, db_provider=None) -> None:
+        '''Inicializa a conexão com o banco de dados'''
         if db_provider is None:
             self.db = DatabaseManager()
         else:
             self.db = db_provider
 
-    def insere_pagamento(self, codigo_c:int, n_pagamento:int, data_vencimento:date, data_pagamento:date, valor:float, status:str, forma_pagamento:str, tipo:str): #insere um pagamento referente a um contrato
+    def insere_pagamento(self, codigo_c:int, n_pagamento:int, data_vencimento:date, data_pagamento:date, valor:float, status:str, forma_pagamento:str, tipo:str): 
+        '''Insere um novo pagamento na tabela pagamento.'''
         statement = """
             INSERT INTO pagamento (codigo_c, n_pagamento, data_vencimento, data_pagamento, valor, status, forma_pagamento, tipo)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
@@ -17,7 +20,8 @@ class PagamentoDatabase:
         
         return self.db.execute_statement(statement, params)
     
-    def atualiza_status_pagamento(self, codigo_c:int, n_pagamento:int, status:str):  #muda o status de um pagamento de um contrato
+    def atualiza_status_pagamento(self, codigo_c:int, n_pagamento:int, status:str):  
+        '''Atualiza o status de um pagamento específico.'''
         statement= """
             UPDATE pagamento
             SET 
@@ -28,7 +32,8 @@ class PagamentoDatabase:
         return self.db.execute_statement(statement, params)
 
 
-    def get_status_pagamento(self, codigo_c:int, n_pagamento:int): #pega o status de um pagamento (se tiver passado a data de vencimento já muda para atrasado)
+    def get_status_pagamento(self, codigo_c:int, n_pagamento:int): 
+        '''Obtém o status de um pagamento específico e atualiza para atrasado, se necessário.'''
         statement = """
             SELECT status, data_vencimento FROM pagamento
             WHERE codigo_c = %s AND n_pagamento = %s;
@@ -49,7 +54,8 @@ class PagamentoDatabase:
 
         return status_do_banco
     
-    def get_extrato_pagamento_contrato(self, matricula_imovel: str): #obtem o extrato financeiro por contrato (quantos e quais pagamentos já foram realizados)
+    def get_extrato_pagamento_contrato(self, matricula_imovel: str): 
+        '''Obtém o extrato financeiro por contrato/imóvel'''
         statement="""
         SELECT  p.codigo_c, p.n_pagamento, p.status, p.valor, p.data_vencimento, p.data_pagamento
         FROM pagamento p
@@ -60,7 +66,8 @@ class PagamentoDatabase:
         params = (matricula_imovel,)
         return self.db.execute_select_all(statement, params)
 
-    def get_extrato_pagamento_adquirente(self,CPF_adq:str): #obtem o extrato financeiro por adquirente
+    def get_extrato_pagamento_adquirente(self,CPF_adq:str):
+        '''Obtém o extrato financeiro por adquirente'''
         statement="""
         SELECT p.codigo_c, p.n_pagamento, p.status, p.valor, i.logradouro, i.numero, p.data_vencimento, p.data_pagamento
         FROM pagamento p

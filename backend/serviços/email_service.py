@@ -7,6 +7,7 @@ from flask_mail import Message
 
 class EmailService:
     def __init__(self):
+        '''Inicializa o serviço de email com dependência do AuthDatabase para operações relacionadas a usuários.'''
         from serviços.auth import AuthDatabase 
         self.auth_db = AuthDatabase()
 
@@ -15,6 +16,7 @@ class EmailService:
         return "".join([str(random.randint(0, 9)) for _ in range(length)])
 
     def _send_async_email(self, app_context, msg):
+        ''' Envia email de forma assíncrona. '''
         from main import mail, app
 
         """ 

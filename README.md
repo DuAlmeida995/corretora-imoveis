@@ -76,14 +76,14 @@ Procure por **Aura** na lista de aplicativos e abra normalmente.
 1. **Inicie o servidor PostgreSQL**  
    Certifique-se de que o PostgreSQL está rodando e acessível (localhost por padrão).
 
-2. **Crie um banco de dados `imobiliaria`**
+2. **Crie um banco de dados `imobiliaria`**  
    CREATE DATABASE imobiliaria;
 
-3. **Rode o script de população fornecido em script.sql**
+3. **Rode o script de população fornecido em script.sql**  
     psql -U postgres -d imobiliaria -f populacao.sql
 
-4. **Instale as dependências Python**
+4. **Instale as dependências Python**  
     pip install -r requirements.txt
 
-5. **Execute o servidor**
+5. **Execute o servidor**  
     python main.py

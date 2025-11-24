@@ -58,7 +58,7 @@ Abra o arquivo aura.exe
 ## Instalação no Android
 
 ### **1. Baixe o APK**
-Acesse a aba **Releases** do repositório e faça download do arquivo app-release.apk
+Acesse a aba **Releases** do repositório e faça download do arquivo aura-android.apk
 
 ### **2. Instale no dispositivo**
 No seu celular:

@@ -3,13 +3,16 @@ from serviços.database.conector import DatabaseManager
 from serviços.contrato import ContratoDatabase
 
 class ImóvelDatabase:
+    '''Classe para operações de banco de dados relacionadas a imóveis.'''
     def __init__(self, db_provider=None) -> None:
+        '''Inicializa a conexão com o banco de dados'''
         if db_provider is None:
             self.db = DatabaseManager()
         else:
             self.db = db_provider
 
-    def filtra_imoveis(self, valor_venal_min: float ,valor_venal_max: float, logradouro:str, numero:str, CEP: str, cidade: str, metragem_min: float, metragem_max:float, finalidade:str, tipo: str, n_quartos: int, n_reformas: int, possui_garagem: bool, mobiliado: bool, CPF_prop:str, matricula:str, bairro:str,comodidade:str): #filtra imóveis de acordo com uma série de características (vc ecolhe quantas e quais)
+    def filtra_imoveis(self, valor_venal_min: float ,valor_venal_max: float, logradouro:str, numero:str, CEP: str, cidade: str, metragem_min: float, metragem_max:float, finalidade:str, tipo: str, n_quartos: int, n_reformas: int, possui_garagem: bool, mobiliado: bool, CPF_prop:str, matricula:str, bairro:str,comodidade:str): 
+        '''Filtra imóveis com base em múltiplos critérios.'''
         query = """
                 SELECT DISTINCT i.*, array_agg(DISTINCT img.imovel_image_url) AS imagens
                 FROM imovel i
@@ -21,11 +24,11 @@ class ImóvelDatabase:
         params = []
 
         if valor_venal_min:
-            where_conditions.append("i.valor_venal >= %s") #apresenta imóveis com valor venal mínimo especificado
+            where_conditions.append("i.valor_venal >= %s") 
             params.append(valor_venal_min)
         
         if valor_venal_max:
-            where_conditions.append("i.valor_venal <= %s") #apresenta imóveis com valor venal máximo especificado
+            where_conditions.append("i.valor_venal <= %s")
             params.append(valor_venal_max)
 
         if logradouro:
@@ -46,11 +49,11 @@ class ImóvelDatabase:
             params.append(cidade)
         
         if metragem_min:
-            where_conditions.append("i.metragem >= %s") #filtra imóveis com metragem mínima especificada
+            where_conditions.append("i.metragem >= %s") 
             params.append(metragem_min)
 
         if metragem_max:
-            where_conditions.append("i.metragem <= %s") #filtra imóveis com metragem máxima especificada
+            where_conditions.append("i.metragem <= %s") 
             params.append(metragem_max)
 
         if finalidade:
@@ -90,23 +93,16 @@ class ImóvelDatabase:
             params.append(bairro)
 
         if comodidade:
-            #filtra por imóveis que tenham todas as comodidades listadas
             comodidade_list = [item.strip() for item in comodidade.split(",") if item.strip()]
             if comodidade_list:
-                #ANY verifica se a comodidade é qualquer uma da lista
                 where_conditions.append("c.comodidade = ANY(%s)")
                 params.append(comodidade_list)
-                
-                # Adiciona a cláusula HAVING para garantir que TODAS as comodidades
-                # listadas estejam presentes (COUNT)
                 query += " WHERE " + " AND ".join(where_conditions)
                 query += " GROUP BY i.matricula HAVING COUNT(DISTINCT c.comodidade) = %s"
                 params.append(len(comodidade_list))
                 
-                #a query de comodidade é especial, então já a executamos
                 return self.db.execute_select_all(query, tuple(params))
 
-        #se não filtrou por comodidade, constrói a query normal
         if where_conditions:
             query += " WHERE " + " AND ".join(where_conditions)
         
@@ -115,6 +111,7 @@ class ImóvelDatabase:
         return self.db.execute_select_all(query, tuple(params))
     
     def atualiza_imóvel(self, matricula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, n_reformas, finalidade, logradouro, complemento, numero, cep, cidade, descricao, bairro):
+        '''Atualiza as informações de um imóvel específico.'''
         statement = """
             UPDATE imovel
             SET n_quartos = %s, 
@@ -137,7 +134,8 @@ class ImóvelDatabase:
         params = (n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, n_reformas, finalidade, logradouro, complemento, numero, cep, cidade, descricao, bairro, matricula)
         return self.db.execute_statement(statement, params)
         
-    def get_status_imovel(self, matricula: str): #obtém os status de um imóvel (se a data de fim de um contrato tiver passado, altera o status do contrato para finalizado e o status do imóvel para disponível)
+    def get_status_imovel(self, matricula: str): 
+        '''Obtém o status atual de um imóvel específico.'''
         statement = """
             SELECT c.codigo, c.status, c.data_fim FROM imovel i 
             LEFT JOIN contrato c ON i.matricula = c.matricula_imovel 
@@ -164,7 +162,8 @@ class ImóvelDatabase:
             return status_do_banco
         
         
-    def cadastra_imóvel(self, matricula:str, n_quartos: int, valor_venal: float, metragem: float, tipo: str, mobiliado: bool, possui_garagem: bool, n_reformas: int, finalidade: str, logradouro: str, complemento:str, numero: str, CEP: str, cidade: str, cpf_prop: str, descricao: str, bairro:str): #cadastra um novo imóvel
+    def cadastra_imóvel(self, matricula:str, n_quartos: int, valor_venal: float, metragem: float, tipo: str, mobiliado: bool, possui_garagem: bool, n_reformas: int, finalidade: str, logradouro: str, complemento:str, numero: str, CEP: str, cidade: str, cpf_prop: str, descricao: str, bairro:str): 
+        '''Cadastra um novo imóvel no sistema.'''
         statement = """
             INSERT INTO imovel (matricula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, n_reformas, finalidade, logradouro, complemento, numero, CEP, cidade, CPF_prop, descricao, bairro)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
@@ -214,11 +213,12 @@ class ImóvelDatabase:
             SET {', '.join(set_clauses)}
             WHERE matricula = %s;
         """
-        params.append(matricula) #adiciona a matrícula ao final da lista de params
+        params.append(matricula) 
         
         return self.db.execute_statement(statement, tuple(params))
     
-    def altera_proprietario_imóvel(self, matricula:str, cpf_prop: str): #altera o proprietário de um imóvel
+    def altera_proprietario_imóvel(self, matricula:str, cpf_prop: str): 
+        '''Altera o proprietário de um imóvel específico.'''
         statement = """
             UPDATE imovel
             SET CPF_prop = %s
@@ -227,29 +227,28 @@ class ImóvelDatabase:
         params = (cpf_prop, matricula)
         return self.db.execute_statement(statement, params)
     
-    def adiciona_comodidades_imóvel(self, matricula:str, comodidades: str): #adiciona comodidades a um imóvel
-        
+    def adiciona_comodidades_imóvel(self, matricula:str, comodidades: str): 
+        '''Adiciona comodidades a um imóvel específico.''' 
         comodidade_list = [item.strip() for item in comodidades.split(",") if item.strip()]
         if not comodidade_list:
-            return True # Nada a adicionar
+            return True 
 
-        #cria os placeholders (%s, %s) para cada comodidade
         placeholders = ", ".join(["(%s, %s)"] * len(comodidade_list))
         
-        #cria a lista de parâmetros
         params = []
         for item in comodidade_list:
-            params.extend([matricula, item]) # Adiciona (matricula, comodidade) para cada item
+            params.extend([matricula, item])
 
         statement = f"""
                 INSERT INTO comodidades_imovel(matricula, comodidade) VALUES {placeholders};
         """
         return self.db.execute_statement(statement, tuple(params))
     
-    def remove_comodidades_imóvel(self, matricula:str, comodidades: str): #remove as comodiades de um imóvel (através desse e do adicionar que alteramos as comodidades de um imóvel)
+    def remove_comodidades_imóvel(self, matricula:str, comodidades: str): 
+        '''Remove comodidades de um imóvel específico.'''
         comodidade_list = [item.strip() for item in comodidades.split(",") if item.strip()]
         if not comodidade_list:
-            return True # Nada a remover
+            return True 
 
         statement = """
             DELETE FROM comodidades_imovel
@@ -258,7 +257,8 @@ class ImóvelDatabase:
         params = (matricula, comodidade_list)
         return self.db.execute_statement(statement, params)
     
-    def deleta_imóvel(self, matricula:str): #deleta um imóvel
+    def deleta_imóvel(self, matricula:str):
+        '''Deleta um imóvel específico do sistema.'''
         statement = """
             DELETE FROM imovel
             WHERE matricula = %s;
@@ -266,6 +266,7 @@ class ImóvelDatabase:
         return self.db.execute_statement(statement, (matricula,))
     
     def insere_imagem_imovel(self, matricula: str, url: str):
+        '''Insere uma imagem para um imóvel específico.'''
         statement = """
             INSERT INTO imagem_imovel (matricula, imovel_image_url)
             VALUES (%s, %s);
@@ -273,6 +274,7 @@ class ImóvelDatabase:
         return self.db.execute_statement(statement, (matricula, url))
     
     def deleta_imagem_imovel(self, matricula: str, url: str):
+        '''Deleta uma imagem específica de um imóvel.'''
         statement = """
             DELETE FROM imagem_imovel
             WHERE matricula = %s AND imovel_image_url = %s;

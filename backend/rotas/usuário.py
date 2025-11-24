@@ -9,7 +9,8 @@ import os
 usuário_blueprint = Blueprint("usuario", __name__)
 
 @usuário_blueprint.route("/usuario/cadastro", methods=["POST"])
-def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus eventuais números de telefone(aqui vc passa uma lista separada por vírgula)
+def cria_usuário_completo():
+    '''Cadastra um novo usuário com todos os dados pessoais, telefones e tipos (proprietário, adquirente, corretor)'''
     json = request.get_json()
     cpf = json.get("cpf")
     prenome = json.get("prenome")
@@ -17,14 +18,14 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
     data_nasc_str = json.get("data_nasc")
     email = json.get("email")
     senha = json.get("senha") 
-    tel_usuario = json.get("telefones") #aqui vc passa uma lista separada por vírgula
-    proprietario = json.get("proprietario")  #opcional, só se for proprietário
-    adquirente = json.get("adquirente")  #opcional, só se for adquirente
-    corretor = json.get("corretor")  #opcional, só se for corretor
-    pontuacao_credito = json.get("pontuacao_credito")  #opcional, só se for adquirente
-    especialidade = json.get("especialidade")  #opcional, só se for corretor
-    creci = json.get("creci")  #opcional, só se for corretor
-    regiao_atuação = json.get("regiao_atuacao")  #opcional, só se for corretor
+    tel_usuario = json.get("telefones") 
+    proprietario = json.get("proprietario")  
+    adquirente = json.get("adquirente")  
+    corretor = json.get("corretor")  
+    pontuacao_credito = json.get("pontuacao_credito")  
+    especialidade = json.get("especialidade")  
+    creci = json.get("creci")  
+    regiao_atuação = json.get("regiao_atuacao")  
 
     if not all([cpf, prenome, sobrenome, data_nasc_str, email, senha, tel_usuario]):
         return jsonify("Todos os campos (cpf, prenome, sobrenome, data_nasc, email, senha, telefones) sao obrigatorios"), 400
@@ -36,7 +37,7 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
         return jsonify("E necessario selecionar ao menos um tipo de usuario (proprietario, adquirente ou corretor)."), 400
     
     try:
-        data_nasc_obj = datetime.strptime(data_nasc_str, '%Y-%m-%d').date() # Converte a string "YYYY-MM-DD" em um objeto 'date'
+        data_nasc_obj = datetime.strptime(data_nasc_str, '%Y-%m-%d').date() 
     except (ValueError, TypeError):
         return jsonify({"erro": "Formato de data invalido. Use YYYY-MM-DD"}), 400
     
@@ -54,10 +55,10 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
         return jsonify("Nao foi possivel criar usuario."), 400
     
     try:
-        hash_da_senha = gerar_hash_senha(senha)  #gera o hash da senha
-        db_service.insere_login(cpf, hash_da_senha) #salva o hash no banco de dados
+        hash_da_senha = gerar_hash_senha(senha)  
+        db_service.insere_login(cpf, hash_da_senha) 
     except Exception as e_login:
-        db_service.deleta_usuário(cpf) #se der erro ao criar o login, desfaz o cadastro do usuário
+        db_service.deleta_usuário(cpf) 
         return jsonify(f"Nao foi possivel criar o login (verifique se o 'ALTER TABLE' foi feito). Cadastro desfeito. Erro: {e_login}"), 400
 
     try:
@@ -99,6 +100,7 @@ def cria_usuário_completo(): #cadastra um usuário, seus eventuais tipos e seus
 @usuário_blueprint.route("/usuario/cadastro-cliente", methods=["POST"])
 @token_obrigatorio
 def cadastra_cliente_pelo_corretor():
+    '''Cadastra um novo cliente (proprietário e/ou adquirente) sem senha, via corretor logado'''
     json = request.get_json()
     
     cpf = json.get("cpf")
@@ -139,7 +141,7 @@ def cadastra_cliente_pelo_corretor():
         if not sucesso_tel:
              raise Exception("Falha na validação ou inserção dos telefones.")
     except Exception as e:
-        db_service.deleta_usuário(cpf) # Rollback manual se falhar telefone
+        db_service.deleta_usuário(cpf) 
         return jsonify({"error": f"Erro ao cadastrar telefones: {str(e)}"}), 400
 
     try:
@@ -160,16 +162,16 @@ def cadastra_cliente_pelo_corretor():
 
 @usuário_blueprint.route("/usuario/telefones", methods=["POST"])
 @token_obrigatorio
-def adiciona_telefones_usuário(): #insere os telefones de um usuário (aqui vc passa uma lista separada por vírgula)
-    cpf_logado = request.cpf_usuario  #usar o cpf do token para maior segurança
+def adiciona_telefones_usuário():
+    '''Adiciona novos números de telefone ao perfil do usuário logado'''
+    cpf_logado = request.cpf_usuario  
     json = request.get_json()
-    tel_usuario = json.get("telefones") #aqui vc passa uma lista separada por vírgula
-
+    tel_usuario = json.get("telefones") 
     if not all([cpf_logado, tel_usuario]):
         return jsonify("Todos os campos (cpf, telefones) sao obrigatorios"), 400
 
     registro_tel=UsuárioDatabase().insere_lista_tel_usuário(
-        cpf_logado, #usar o cpf do token para maior segurança
+        cpf_logado, 
         tel_usuario
     )
 
@@ -180,17 +182,18 @@ def adiciona_telefones_usuário(): #insere os telefones de um usuário (aqui vc 
 
 @usuário_blueprint.route("/usuario/telefones", methods=["DELETE"])
 @token_obrigatorio
-def remove_telefones_usuário():  # remove os telefones de um usuário (aqui vc passa uma lista separada por vírgula)
-    cpf_logado = request.cpf_usuario  #usar o cpf do token para maior segurança
+def remove_telefones_usuário(): 
+    '''Remove números de telefone específicos do perfil do usuário logado'''
+    cpf_logado = request.cpf_usuario  
     json = request.get_json()
-    tel_usuario = json.get("telefones") #aqui vc passa uma lista separada por vírgula
+    tel_usuario = json.get("telefones") 
 
     if not all([cpf_logado, tel_usuario]):
         return jsonify("Todos os campos (cpf, telefones) sao obrigatorios"), 400
     
 
     registro_tel=UsuárioDatabase().deleta_tel_usuário(
-        cpf_logado, #usar o cpf do token para maior segurança
+        cpf_logado, 
         tel_usuario
     )
 
@@ -202,6 +205,7 @@ def remove_telefones_usuário():  # remove os telefones de um usuário (aqui vc 
 @usuário_blueprint.route("/usuario/perfil/update", methods=["PUT"])
 @token_obrigatorio
 def update_usuario_perfil():
+    '''Atualiza as informações básicas do perfil do usuário logado'''
     cpf_logado = request.cpf_usuario 
     data = request.get_json()
 
@@ -234,8 +238,9 @@ def update_usuario_perfil():
 
 @usuário_blueprint.route("/usuario/deleta", methods=["DELETE"])
 @token_obrigatorio
-def deleta_usuário(): #deleta um usuário (e consequentemente seus telefones, por ter o on delete cascade no bd)
-    cpf_logado = request.cpf_usuario  #usar o cpf do token para maior segurança
+def deleta_usuário():
+    '''Remove completamente a conta do usuário logado do sistema'''
+    cpf_logado = request.cpf_usuario  
     json = request.get_json()
 
     if not cpf_logado:
@@ -243,7 +248,7 @@ def deleta_usuário(): #deleta um usuário (e consequentemente seus telefones, p
     
 
     registro=UsuárioDatabase().deleta_usuário(
-        cpf_logado #usar o cpf do token para maior segurança
+        cpf_logado 
     )
 
     if not registro:
@@ -253,26 +258,27 @@ def deleta_usuário(): #deleta um usuário (e consequentemente seus telefones, p
 
 @usuário_blueprint.route("/usuario/perfis-imoveis", methods=["GET"])
 @token_obrigatorio
-def get_perfil_imóvel_adquirente():  #obtém o perfil de imóveis de um adquirente
+def get_perfil_imóvel_adquirente():  
+    '''Obtém o perfil de preferências de imóveis do adquirente logado'''
     cpf_logado = request.cpf_usuario
 
     try:
         perfil = UsuárioDatabase().get_perfil_imóvel_adquirente(
-            cpf_logado #usa o CPF seguro
+            cpf_logado 
         )
         return jsonify(perfil), 200
     except Exception as e:
         return jsonify(f"Nao foi possivel obter o perfil do adquirente. Erro: {e}"), 400
 
-
 @usuário_blueprint.route("/usuario/imoveis-proprietario", methods=["GET"])
 @token_obrigatorio
-def get_info_imóvel_proprietário(): #obtém os imóveis de um proprietário, fornecendo status sobre eles
+def get_info_imóvel_proprietário(): 
+    '''Obtém todos os imóveis do proprietário logado com seus status atuais'''
     cpf_logado = request.cpf_usuario
     
     try:
         info = UsuárioDatabase().get_info_imóvel_proprietário(
-            cpf_logado #usa o CPF seguro
+            cpf_logado 
         )
         return jsonify(info), 200
     except Exception as e:
@@ -283,12 +289,14 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
+    ''' Verifica se o arquivo tem uma extensão permitida. '''
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @usuário_blueprint.route("/usuario/upload_foto_perfil", methods=["POST"])
 @token_obrigatorio
 def upload_foto_perfil():
+    '''Faz upload de uma foto de perfil para o usuário logado'''
     cpf = request.cpf_usuario
     
     if 'profile_image_url' not in request.files:
@@ -296,7 +304,6 @@ def upload_foto_perfil():
     
     file = request.files['profile_image_url']
 
-    # Limite de 5MB para imagem de perfil
     MAX_FILE_SIZE = 5 * 1024 * 1024 
     file.seek(0, os.SEEK_END)
     file_size = file.tell()

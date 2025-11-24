@@ -7,6 +7,7 @@ auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth_blueprint.route("/login", methods=["POST"])
 def login():
+    '''Faz o login do usuário no sistema, verifica CPF, senha, e retorna tokens de acesso '''
     data = request.get_json()
     cpf = data.get("cpf")
     senha = data.get("password") 
@@ -34,14 +35,14 @@ def login():
         usuario['dataNascimento'] = str(data_nasc) 
         del usuario['data_nasc'] 
     return jsonify({
-        "user": usuario, #contem prenome, sobrenome, email, cpf, etc.
+        "user": usuario,
         "access_token": access_token,
         "refresh_token": refresh_token
     }), 200
 
-
 @auth_blueprint.route("/refresh", methods=["POST"])
 def refresh_token():
+    '''Renova os tokens de acesso usando o refresh token quando o access token expira'''
     data = request.get_json()
     token = data.get("refresh_token")
 
@@ -63,14 +64,12 @@ def refresh_token():
         "refresh_token": refresh_token
     }), 200
 
-#esta rota é a /auth/register 
-#ela simplesmente reutiliza a lógica de criação de usuário já existente
 @auth_blueprint.route("/register", methods=["POST"])
 def register():
+    """Registra um novo usuário no sistema"""
     print("\n--- INÍCIO LOG DE REGISTRO FLUTTER ---")
         
-    # Tenta obter o JSON da requisição
-    data = request.get_json(silent=True) # silent=True evita falha se o corpo não for JSON
+    data = request.get_json(silent=True) 
     
     if data is None:
             print("ERRO: Corpo da Requisição VAZIO ou NÃO É JSON válido.")
@@ -88,7 +87,6 @@ def register():
         return cria_usuário_completo()
     except Exception as e:
         return jsonify({"error": f"Erro ao processar registro: {e}"}), 500
-
 
 @auth_blueprint.route("/request-otp", methods=["POST"])
 def request_otp():

@@ -5,6 +5,7 @@ from psycopg2.extras import DictCursor
 class DatabaseManager:
     "Classe de Gerenciamento do database"
 
+    #estabelece conexao com o banco de dados PostgreSQL
     def __init__(self) -> None:
         self.conn = psycopg2.connect(
             dbname="imobiliaria",
@@ -14,7 +15,6 @@ class DatabaseManager:
             port=5432,
         )
         self.cursor = self.conn.cursor(cursor_factory=DictCursor)
-
 
     def __execute_query(self, statement: str, params: tuple = None, fetch_one=False, fetch_all=False):
         """
@@ -44,9 +44,8 @@ class DatabaseManager:
                 return True
             
             except Exception as e:
-                self.conn.rollback() # Desfaz a transação em caso de erro
+                self.conn.rollback() 
                 print(f"Erro ao executar statement: {e}")
-                # Propaga o erro para a camada de serviço/rota
                 raise e
 
     def execute_statement(self, statement: str, params: tuple = None):

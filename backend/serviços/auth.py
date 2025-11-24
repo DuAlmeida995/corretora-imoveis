@@ -5,8 +5,9 @@ from datetime import timezone
 import jwt
 
 class AuthDatabase:
-
+    '''Classe para operações de banco de dados relacionadas à autenticação e usuários.'''
     def __init__(self, db_provider=None) -> None:
+        '''Inicializa a conexão com o banco de dados'''
         if db_provider is None:
             self.db = DatabaseManager()
         else:

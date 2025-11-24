@@ -7,7 +7,6 @@ pwd_context = CryptContext(
 
 def gerar_hash_senha(senha: str) -> str:
     """ Gera um hash seguro da senha usando Argon2 (KDF moderna). """
-    # passlib gera o hash, incluindo o salt e os parâmetros de custo.
     return pwd_context.hash(senha)
 
 def verificar_hash_senha(senha_fornecida: str, hash_armazenado: str) -> bool:

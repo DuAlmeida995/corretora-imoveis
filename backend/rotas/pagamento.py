@@ -7,7 +7,8 @@ pagamento_blueprint = Blueprint("pagamento", __name__)
 
 @pagamento_blueprint.route("/pagamento/cadastro", methods=["POST"])
 @token_obrigatorio
-def cadastra_pagamento(): #insere um pagamento referente a um contrato
+def cadastra_pagamento(): 
+    '''Cria um novo pagamento vinculado a um contrato específico'''
     json = request.get_json()
     código_c = json.get("codigo_contrato")
     n_pagamento = json.get("n_pagamento")
@@ -46,7 +47,8 @@ def cadastra_pagamento(): #insere um pagamento referente a um contrato
 
 @pagamento_blueprint.route("/pagamento/status", methods=["GET"])
 @token_obrigatorio
-def verifica_status_pagamento(): #pega o status de um pagamento (se tiver passado a data de vencimento já muda para atrasado)
+def verifica_status_pagamento():
+    '''Obtém o status de um pagamento específico e atualiza para atrasado, se necessário''' 
     código_c = request.args.get("codigo_contrato", "")
     n_pagamento = request.args.get("n_pagamento", "")
 
@@ -65,7 +67,8 @@ def verifica_status_pagamento(): #pega o status de um pagamento (se tiver passad
 
 @pagamento_blueprint.route("/pagamento/atualiza_status", methods=["PUT"])
 @token_obrigatorio
-def atualiza_status_pagamento():  #muda o status de um pagamento de um contrato
+def atualiza_status_pagamento(): 
+    '''Atualiza o status de um pagamento específico'''
     json = request.get_json()
     código_c = json.get("codigo_contrato")
     n_pagamento = json.get("n_pagamento")
@@ -87,14 +90,16 @@ def atualiza_status_pagamento():  #muda o status de um pagamento de um contrato
 
 @pagamento_blueprint.route("/pagamento/extrato-imovel", methods=["GET"])
 @token_obrigatorio
-def get_extrato_pagamento_imóvel(): #obtem o extrato financeiro por contrato (quantos e quais pagamentos já foram realizados)
+def get_extrato_pagamento_imóvel():
+    '''Obtém o extrato financeiro do imóvel logado''' 
     matrícula_imóvel=request.args.get("matricula","")
     return jsonify(PagamentoDatabase().get_extrato_pagamento_contrato(
         matrícula_imóvel)),200
-    
+  
 @pagamento_blueprint.route("/pagamento/extrato-adquirente", methods=["GET"])
 @token_obrigatorio
-def get_extrato_pagamento_adquirente(): #obtem o extrato financeiro por adquirente
-    cpf_logado = request.cpf_usuario #usa o CPF seguro
+def get_extrato_pagamento_adquirente():
+    '''Obtém o extrato financeiro do adquirente logado''' 
+    cpf_logado = request.cpf_usuario 
     return jsonify(PagamentoDatabase().get_extrato_pagamento_adquirente(
         cpf_logado)),200

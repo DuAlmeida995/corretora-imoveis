@@ -125,7 +125,8 @@ GROUP BY u.CPF, i.tipo, i.finalidade, c.tipo
 ORDER BY u.prenome, total_de_contratos DESC;
 */
 
-SELECT u.prenome, u.sobrenome, i.tipo AS tipo_de_imovel, i.finalidade, c.tipo AS tipo_de_contrato, COUNT(*) AS total_de_contratos
+SELECT u.prenome, u.sobrenome, i.tipo AS tipo_de_imovel, i.finalidade, c.tipo AS tipo_de_contrato,
+	COUNT(*) AS total_de_contratos
 FROM usuario u
 JOIN assina a ON u.CPF = a.CPF_adq
 JOIN contrato c ON a.codigo_c = c.codigo
@@ -246,7 +247,8 @@ numero, CEP, cidade, CPF_prop, descricao, bairro)
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
 */
 
-INSERT INTO imovel (matricula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, n_reformas, finalidade, logradouro, complemento, numero, CEP, cidade, CPF_prop, descricao, bairro)
+INSERT INTO imovel (matricula, n_quartos, valor_venal, metragem, tipo, mobiliado, possui_garagem, 
+	n_reformas, finalidade, logradouro, complemento, numero, CEP, cidade, CPF_prop, descricao, bairro)
 VALUES ('1001001001001011', 3, 950000.00, 180.0, 'Casa', false, true, 1, 'Residencial',
 'Rua Maria Amália Lopes de Azevedo', NULL, '3000', '02350001', 'São Paulo', '60590810211',
 'Casa espaçosa no Tremembé, 3 quartos, perto da serra.','Tremembé');
@@ -363,8 +365,10 @@ VALUES (DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s)
 RETURNING codigo;
 */
 
-INSERT INTO contrato (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel, CPF_prop, CPF_corretor)
-VALUES (DEFAULT, 2500.00, 'Ativo', '2025-12-01', '2027-12-01', 'Aluguel', '1001001001001011', '12345678901', '28780010489')
+INSERT INTO contrato (codigo, valor, status, data_inicio, data_fim, tipo, matricula_imovel,
+	CPF_prop, CPF_corretor)
+VALUES (DEFAULT, 2500.00, 'Ativo', '2025-12-01', '2027-12-01', 'Aluguel', '1001001001001011',
+	'12345678901', '28780010489')
 RETURNING codigo;
 
 /*
@@ -423,7 +427,8 @@ ORDER BY data_inicio DESC;
 ordenada do mais recente para o mais antigo.
 */
 
-SELECT c.codigo, c.status, c.tipo, c.data_inicio, c.data_fim, c.valor,  c.CPF_prop, c.CPF_corretor, i.matricula, i.logradouro, i.numero
+SELECT c.codigo, c.status, c.tipo, c.data_inicio, c.data_fim, c.valor,  c.CPF_prop, c.CPF_corretor,
+	i.matricula, i.logradouro, i.numero
 FROM contrato c
 JOIN imovel i ON c.matricula_imovel = i.matricula
 ORDER BY c.codigo DESC; 
@@ -494,7 +499,8 @@ valor, status, forma_pagamento, tipo)
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
 */
 
-INSERT INTO pagamento (codigo_c, n_pagamento, data_vencimento, data_pagamento, valor, status, forma_pagamento, tipo)
+INSERT INTO pagamento (codigo_c, n_pagamento, data_vencimento, data_pagamento, valor, status, 
+	forma_pagamento, tipo)
 VALUES (31, 1, '2026-01-01', NULL, 2500.00, 'Pendente', 'Boleto', 'Aluguel');
 
 /*
@@ -559,7 +565,8 @@ WHERE a.CPF_adq = %s
 ORDER BY p.data_vencimento DESC;
 */
 
-SELECT p.codigo_c, p.n_pagamento, p.status, p.valor, i.logradouro, i.numero, p.data_vencimento, p.data_pagamento
+SELECT p.codigo_c, p.n_pagamento, p.status, p.valor, i.logradouro, i.numero, p.data_vencimento, 
+	p.data_pagamento
 FROM pagamento p
 JOIN contrato c ON p.codigo_c = c.codigo
 JOIN imovel i ON c.matricula_imovel = i.matricula
@@ -698,7 +705,8 @@ Conta contratos ativos, atrasados (data fim < hoje) e vencendo em 30 dias.
 SELECT
 COUNT(*) FILTER (WHERE status = 'Ativo') as ativos,
 COUNT(*) FILTER (WHERE status = 'Ativo' AND data_fim < CURRENT_DATE) as atrasados,
-COUNT(*) FILTER (WHERE status = 'Ativo' AND data_fim BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '30 day')) as vencendo
+COUNT(*) FILTER (WHERE status = 'Ativo' AND data_fim BETWEEN CURRENT_DATE AND 
+	(CURRENT_DATE + INTERVAL '30 day')) as vencendo
 FROM contrato;
 
 /*
